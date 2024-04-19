@@ -1,8 +1,11 @@
 # BloodDonorRegistration
 
-<div style="text-align: center;">
-  <img src="logo.png" border="5px solid red"/>
-</div>
+<div align="center">
+    <img src="logo.png" height="128" alt="Логотип DonorMirror">
+  <h2>DonorMirror</h2>
+  <p align="center">
+    <p>Open source & easy-to-use blood donor information system(HIS) for all healthcare organisations.</p>
+  </p>
 
 **Предметная область**
 
