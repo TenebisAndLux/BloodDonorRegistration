@@ -6,6 +6,7 @@
   <p align="center">
     <p>Open source & easy-to-use blood donor information system(HIS) for all healthcare organisations.</p>
   </p>
+</div>
 
 **Предметная область**
 
