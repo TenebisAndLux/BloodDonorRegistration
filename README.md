@@ -1,6 +1,8 @@
 # BloodDonorRegistration
 
-![logo](logo.png)
+<div style="text-align: center;">
+  <img src="logo.png" border="5px solid red"/>
+</div>
 
 **Предметная область**
 
