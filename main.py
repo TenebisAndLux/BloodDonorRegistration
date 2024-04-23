@@ -1,7 +1,7 @@
-from flask import Flask
+from flask import Flask, send_from_directory
 from flask_restful import Api, Resource, reqparse
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='', static_folder='frontend')
 api = Api(app)
 
 donors = {
@@ -19,14 +19,18 @@ class DonorList(Resource):
         parser.add_argument("name", type=str, required=True, help="Name cannot be blank")
         parser.add_argument("blood_type", type=str, required=True, help="Blood type cannot be blank")
         args = parser.parse_args()
-
         donor = {"name": args["name"], "blood_type": args["blood_type"]}
-        donors.append(donor)
-
+        donors[len(donors) + 1] = donor
         return donor, 201
 
 
 api.add_resource(DonorList, "/api/donors")
 
+
+@app.route('/')
+def index():
+    return send_from_directory('frontend', 'index.html')
+
+
 if __name__ == '__main__':
-    app.run(debug=True, port=3000, host="127.0.0.1")
+    app.run(debug=True, port=3000)
