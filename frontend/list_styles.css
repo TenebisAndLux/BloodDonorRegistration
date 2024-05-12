@@ -1,0 +1,210 @@
+* {
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    background-color: #F0F8FF; /* light sky blue */
+}
+
+.header {
+    background-color: #3498db; /* blue */
+    padding: 15px 20px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+    border-radius: 10px 0 0 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    grid-column: 1 / -1;
+}
+
+.header .hospital-name {
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.header .name {
+    color: white;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.header .action {
+    color: white;
+    font-size: 16px;
+    margin-left: 10px;
+}
+
+.search-container {
+    background-color: white;
+    padding: 15px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+    border-radius: 10px;
+    margin-bottom: 20px;
+    grid-column: 1 / -1;
+}
+
+.search-container label {
+    display: block;
+    margin-bottom: 10px;
+}
+
+.search-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 15px;
+}
+
+.action-buttons button {
+    background-color: #3498db; /* blue */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.action-buttons button:hover {
+    background-color: #2980b9; /* light blue */
+}
+
+.donors-list-history {
+    background-color: white;
+    padding: 15px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+    border-radius: 10px;
+    margin-bottom: 20px;
+    grid-column: 1 / -1;
+    width: 100%;
+}
+
+.donors-list-history tr:hover {
+    background-color: #3498db; /* blue */
+}
+
+.donors-list-history tr:nth-child(even) {
+    background-color: #f5f5f5;
+}
+
+.donors-list-history tr:first-child {
+    background-color: #d9d9d9;
+}
+
+.donors-list-history tr:last-child {
+    background-color: #c2c2c2;
+}
+
+.donors-list-history th, .donors-list-history td {
+    padding: 10px;
+    border: 1px solid #3498db; /* blue */
+}
+
+.donors-list-history th {
+    background-color: #3498db; /* blue */
+    color: white;
+    text-align: left;
+}
+
+.donors-list-history th, .donors-list-history td {
+    border-right: 1px solid #3498db; /* blue */
+}
+
+.donors-list-history th:last-child, .donors-list-history td:last-child {
+    border-right: none;
+}
+
+.save-load-buttons {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+    grid-column: 1 / -1;
+    gap: 10px;
+}
+
+.save-load-buttons button {
+    background-color: #3498db; /* blue */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.save-load-buttons button:hover {
+    background-color: #2980b9; /* light blue */
+}
+
+.save-load-buttons input[type="file"] {
+    display: none;
+}
+
+
+.donors-list {
+    background-color: #f5f5f5;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    grid-column: 1 / -1;
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.donors-list th, .donors-list td {
+    padding: 10px;
+    border-top: 1px solid #ccc;
+}
+
+.donors-list th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+}
+
+.donors-list tr:hover {
+    background-color: #f5f5f5;
+}
+
+.donors-list tr:nth-child(even) {
+    background-color: #fff;
+}
+
+.donors-list tr:first-child {
+    background-color: #f5f5f5;
+}
+
+.donors-list tr:last-child {
+    background-color: #f5f5f5;
+}
+
+@media (min-width: 900px) {
+    .header {
+        border-radius: 10px 0 0 10px;
+    }
+    
+    .search-container {
+        grid-column: 2 / -1;
+    }
+    
+    .action-buttons {
+        grid-column: 1 / -2;
+    }
+    
+    .donors-list-history {
+        grid-column: 1 / -2;
+    }
+    
+    .donors-list {
+        grid-column: 1 / -2;
+    }
+}
+

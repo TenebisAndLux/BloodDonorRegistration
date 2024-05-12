@@ -1,0 +1,41 @@
+body {   
+    background-image: url("doctor.jpg");   
+    background-repeat: no-repeat;   
+    background-position: 0% 70%; 
+    background-size: 65%;   
+    display: flex;   
+    flex-direction: column;   
+    justify-content: space-between;   
+    min-height: 100vh;   
+    margin: 0;   
+    color: #333;   
+    font-family: Arial, sans-serif;   
+}   
+.header {   
+    background-color: #3498db;   
+    padding: 15px;   
+    color: white;   
+    text-align: center;   
+}   
+.login-container {   
+    display: flex;   
+    align-items: center;   
+    justify-content: flex-end;   
+    margin: 50px 0;   
+    flex-direction: column;   
+}   
+.login-picture-container {  
+    width: 70%;  
+    margin-bottom: 20px;   
+}  
+.login {   
+    width: 400px;   
+    margin-left: 30%;   
+}   
+form {  
+    padding: 20px;  
+    background-color: rgba(255, 255, 255, 0.9);  
+    border-radius: 10px;  
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);  
+}  
+ 

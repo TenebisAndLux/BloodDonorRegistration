@@ -3,23 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blood Donor App</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Система учета доноров крови</title>
+    <link rel="stylesheet" href="main_styles.css">
+    <link rel="stylesheet" href="list_styles.css">
 </head>
 <body>
-    <h1>Blood Donor App</h1>
-    <form id="add-form">
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name" placeholder="Name">
-        <label for="bloodType">Blood Type (e.g. A+):</label>
-        <input type="text" id="bloodType" name="bloodType" placeholder="Blood Type">
-        <button type="submit">Add Donor</button>
-    </form>
+    <div class="header">
+        <div class="hospital-name">Больница имени Н.И. Пирогова</div>
+        <div class="name-container" onmouseenter="showLogoutButton()" onmouseleave="hideLogoutButton()">
+          <div class="name" onfocus="showLogoutButton()">
+            Иванов И.И.
+          </div>
+          <div class="exit-button" style="display: none" onmouseenter="showLogoutButton()" onmouseleave="hideLogoutButton()" onclick="logout()">Выход</div>
+        </div>
+      </div>
+      <style>
+        .exit-button {
+          background-color: rgb(11, 54, 92); /* light sky blue */
+          padding: 10px;
+          border-radius: 10px;
+          cursor: pointer;
+        }
+      </style>
+      
+      <script>
+      function showLogoutButton() {
+        document.querySelector(".exit-button").style.display = "block";
+      }
+      
+      function hideLogoutButton() {
+        setTimeout(function() {
+          if (!document.querySelector(".name-container:hover") && !document.querySelector(".exit-button:hover")) {
+            document.querySelector(".exit-button").style.display = "none";
+          }
+        }, 500);
+      }
+      </script>
+    <div class="search-container">
+        <table>
+            <tr>
+                <td><label for="surname">Фамилия:</label></td>
+                <td><input type="text" id="surname" name="surname" size="15"></td>
+                <td><label for="street">Улица:</label></td>
+                <td><input type="text" id="street" name="street" size="15"></td>
+                <td><label for="series">Серия полиса:</label></td>
+                <td><input type="text" id="series" name="series" size="15"></td>
+            </tr>
+            <tr>
+                <td><label for="name">Имя:</label></td>
+                <td><input type="text" id="name" name="name" size="15"></td>
+                <td><label for="house">Дом:</label></td>
+                <td><input type="text" id="house" name="house" size="15"></td>
+                <td><label for="ambulatory_card_number">Амб.карта:</label></td>
+                <td><input type="text" id="ambulatory_card_number" name="ambulatory_card_number" size="15"></td>
+            </tr>
+            <tr>
+                <td><label for="patronymic">Отчество:</label></td>
+                <td><input type="text" id="patronymic" name="patronymic" size="15"></td>
+                <td><label for="blood_bank_registration_number">СНИЛС:</label></td>
+                <td><input type="text" id="blood_bank_registration_number" name="blood_bank_registration_number" size="15"></td>
+                <td><label for="birth_date">Д/Р:</label></td>
+                <td><input type="date" id="birth_date" name="birth_date" size="15"></td>
+            </tr>
+            <tr>
+                <td colspan="6" style="text-align: right;">
+                    <button type="reset">Очистить</button>
+                    <div style="display: inline-block; width: 10px;"></div>
+                    <button type="submit" onclick="searchDonors()">Найти</button>
+                </td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="action-buttons">
+        <button onclick="addDonor()">Записать</button>
+        <button onclick="editDonor()">Добавить</button>
+        <button onclick="editDonor()">Редактировать данные</button>
+        <button onclick="requestBlood()">Запросить кровь</button>
+    </div>
+    
+    <table class="donors-list">
+        <thead>
+            <tr>
+                <th>Амб.карта</th>
+                <th>ФИО</th>
+                <th>Д/Р</th>
+                <th>Прикрепление</th>
+                <th>Полис</th>
+                <th>Группа крови</th>
+                <th>Ресус-фактор</th>
+                <th>Дата последней сдачи крови</th>
+                <th>Возможность повторного взятия крови</th>
+            </tr>
+        </thead>
+        <tbody id="donors">
+        </tbody>
+    </table>
+    
+    <table class="donors-list-history">
+        <thead>
+            <tr>
+                <th colspan="6">История и записи</th>
+            </tr>
+            <tr>
+                <th>Амб.карта</th>
+                <th>ФИО</th>
+                <th>Д/Р</th>
+                <th>Прикрепление</th>
+                <th>Полис</th>
+                <th>Дата последнего изменения</th>
+            </tr>
+        </thead>
+        <tbody id="donors-history">
+        </tbody>
+    </table>
+    
+    <div class="save-load-buttons">
+        <button onclick="saveDonors()">Сохранить</button>
+        <button onclick="loadCSV()">Загрузить</button>
+        <input type="file" id="file" onchange="uploadCSV()">
+    </div>
 
-    <p>Donors List</p>
-    <ul id="donors"></ul>
+<div class="footer" style="position: fixed; bottom: 0; width: 100%;">
+    <span>Разработка и поддержка - ООО "DONOR MIRROR"</span>    
+</div>    
 
-    <script src="scripts.js"></script>
+<script src="scripts.js"></script>
 </body>
+
 </html>
 
