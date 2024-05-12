@@ -4,8 +4,8 @@
     <meta charset="UTF-8">    
     <meta name="viewport" content="width=device-width, initial-scale=1.0">    
     <title>Вход в систему</title>    
-    <link rel="stylesheet" href="main_styles.css"> 
-    <link rel="stylesheet" href="login.css">   
+    <link rel="stylesheet" href="{{url_for('static', filename='css/main_styles.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/login.css')}}">
 </head>    
  
 <body>    
@@ -15,13 +15,12 @@
 </div>    
  
 <div class="login-container">    
-    <div class="login-picture-container">    
-        <!-- Уберите изображение из этого места -->  
+    <div class="login-picture-container">
     </div>    
     <div class="login">    
         <form action="/login" method="post">    
             <label for="username">Логин:</label>    
-            <input type="text" id="username" name="username" placeholder="Введите ваш логин" required>    
+            <input type="text" id="username" name="username" placeholder="Введите ваш логин" required autofocus>    
  
             <label for="password">Пароль:</label>    
             <input type="password" id="password" name="password" placeholder="Введите ваш пароль" required>    
@@ -29,6 +28,7 @@
             <input type="submit" value="Войти">    
  
             <a href="/forgot_password">Забыли пароль?</a>     
+            <input type="hidden" name="csrf_token" value="{{csrf_token}}"> 
         </form> 
     </div> 
 </div>     

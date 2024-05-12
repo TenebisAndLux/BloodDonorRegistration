@@ -8,7 +8,7 @@ async function addDonor() {
 
     if (name && bloodType) {
         try {
-            await fetch('http://127.0.0.1:3000/api/donors', {
+            await fetch('http://127.0.0.1:3000/donors', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -27,7 +27,7 @@ async function addDonor() {
 
 async function getDonors() {
     try {
-        const response = await fetch('http://127.0.0.1:3000/api/donors');
+        const response = await fetch('http://127.0.0.1:3000/donors');
         const data = await response.json();
 
         donorsList.innerHTML = "";
