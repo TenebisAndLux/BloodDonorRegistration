@@ -16,52 +16,65 @@ h1, h2, h3, h4, h5, h6 {
     font-family: 'Trebuchet MS', sans-serif;
     margin: 10px 0;
 }
+
 h1 {
     font-size: 36px;
     color: #3498db;
 }
+
 h2 {
     font-size: 28px;
     color: #3498db;
 }
+
 h3 {
     font-size: 24px;
     color: #3498db;
 }
+
 h4 {
     font-size: 20px;
     color: #3498db;
 }
+
 h5 {
     font-size: 18px;
     color: #3498db;
 }
+
 h6 {
     font-size: 16px;
     color: #3498db;
 }
+
 p {
     margin-bottom: 15px;
 }
+
 ul, ol {
     margin-top: 10px;
     margin-bottom: 15px;
 }
+
 ul {
     list-style-type: disc;
     padding-left: 20px;
 }
+
 ol {
     list-style-type: decimal;
     padding-left: 20px;
 }
+
 li {
     margin-bottom: 10px;
 }
+
 a {
     color: #3498db;
     text-decoration: none;
 }
+
 a:hover {
     text-decoration: underline;
 }

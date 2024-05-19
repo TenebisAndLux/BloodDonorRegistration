@@ -13,7 +13,7 @@ async function addDonor() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ name, blood_type: bloodType }),
+                body: JSON.stringify({name, blood_type: bloodType}),
             });
             alert("Donor added successfully.");
             getDonors();

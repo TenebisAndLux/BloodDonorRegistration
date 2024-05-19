@@ -1,40 +1,40 @@
 {% extends 'main/base.html' %}
 
 {% block title %}
-  Вход в систему
+    Вход в систему
 {% endblock %}
 
 {% block header %}
-<header>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/libs/bootstrap.min.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
-</header>
-<div class="header">   
-  <h1>Добро пожаловать в систему учета доноров крови</h1>    
-</div>   
+    <header>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/libs/bootstrap.min.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    </header>
+    <div class="header">
+        <h1>Добро пожаловать в систему учета доноров крови</h1>
+    </div>
 {% endblock %}
 
 {% block content %}
-<div class="login-container">
-  <div class="login">    
-    <form action="/login" method="post" id="login-form">   
-      <label for="username">Логин:</label>    
-      <input type="text" id="username" name="username" placeholder="Введите ваш логин" required autofocus>    
+    <div class="login-container">
+        <div class="login">
+            <form action="/login" method="post" id="login-form">
+                <label for="username">Логин:</label>
+                <input type="text" id="username" name="username" placeholder="Введите ваш логин" required autofocus>
 
-      <label for="password">Пароль:</label>    
-      <input type="password" id="password" name="password" placeholder="Введите ваш пароль" required>    
+                <label for="password">Пароль:</label>
+                <input type="password" id="password" name="password" placeholder="Введите ваш пароль" required>
 
-      <button type="submit" id="login-button">Войти</button>    
+                <button type="submit" id="login-button">Войти</button>
 
-      <a href="/login/forgot" id="forgot-password-link">Забыли пароль?</a> 
-      <input type="hidden" name="csrf_token" value="{{csrf_token}}"> 
-    </form> 
-  </div> 
-</div>  
+                <a href="/login/forgot" id="forgot-password-link">Забыли пароль?</a>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            </form>
+        </div>
+    </div>
 {% endblock %}
 
 {% block footer %}
-<div class="footer">    
-  <span>Разработка и поддержка - ООО "DONOR MIRROR"</span>    
-</div> 
+    <div class="footer">
+        <span>Разработка и поддержка - ООО "DONOR MIRROR"</span>
+    </div>
 {% endblock %}

@@ -149,6 +149,12 @@ html, body {
     display: none;
 }
 
+.exit-button {
+    background-color: rgb(11, 54, 92); /* light sky blue */
+    padding: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+}
 
 .donors-list {
     background-color: #f5f5f5;
@@ -190,19 +196,19 @@ html, body {
     .header {
         border-radius: 10px 0 0 10px;
     }
-    
+
     .search-container {
         grid-column: 2 / -1;
     }
-    
+
     .action-buttons {
         grid-column: 1 / -2;
     }
-    
+
     .donors-list-history {
         grid-column: 1 / -2;
     }
-    
+
     .donors-list {
         grid-column: 1 / -2;
     }
