@@ -6,8 +6,9 @@ from .config import Config
 from .routes.main import main
 from .routes.login import login
 from .routes.forgot_login import forgot_login
-from .routes.donor_list import donor_list
 from .routes.add_donor import donor
+from .routes.donor_list import donor_list
+from .routes.information_system import information_system
 
 
 def create_app(config_class=Config):
@@ -17,9 +18,9 @@ def create_app(config_class=Config):
     app.register_blueprint(main)
     app.register_blueprint(login)
     app.register_blueprint(forgot_login)
-    app.register_blueprint(donor_list)
+    app.register_blueprint(information_system)
     app.register_blueprint(donor)
-
+    app.register_blueprint(donor_list)
 
     db.init_app(app)
     migrate.init_app(app, db)
