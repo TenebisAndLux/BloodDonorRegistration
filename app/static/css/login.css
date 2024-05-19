@@ -1,8 +1,8 @@
 body {   
     background-image: url("doctor.jpg");   
     background-repeat: no-repeat;   
-    background-position: 0% 70%; 
-    background-size: 65%;   
+    background-position: 50% 10%; 
+    background-size: 100%;   
     display: flex;   
     flex-direction: column;   
     justify-content: space-between;   
@@ -10,32 +10,83 @@ body {
     margin: 0;   
     color: #333;   
     font-family: Arial, sans-serif;   
-}   
-.header {   
+    transition: background-color 0.3s ease;   
+}
+
+.header h1 {
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.header {
     background-color: #3498db;   
-    padding: 15px;   
+    padding: 5px;   
     color: white;   
     text-align: center;   
-}   
+    border-radius: 10px;   
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+}
+
+.header a {
+    color: white;
+    text-decoration: none;
+}
+
 .login-container {   
     display: flex;   
     align-items: center;   
-    justify-content: flex-end;   
-    margin: 50px 0;   
+    justify-content: center;   
     flex-direction: column;   
-}   
-.login-picture-container {  
-    width: 70%;  
-    margin-bottom: 20px;   
-}  
+    margin: 50px 0;   
+}
+
 .login {   
     width: 400px;   
-    margin-left: 30%;   
-}   
-form {  
-    padding: 20px;  
-    background-color: rgba(255, 255, 255, 0.9);  
-    border-radius: 10px;  
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);  
-}  
- 
+    margin-top: 30px;   
+    border-radius: 10px;   
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);   
+}
+
+form {   
+    padding: 20px;   
+    background-color: white;   
+    border-radius: 10px;   
+}
+
+label {   
+    display: block;   
+    margin-bottom: 10px;   
+    font-weight: bold;   
+}
+
+input[type="text"], input[type="password"] {   
+    width: 92%;   
+    padding: 15px;   
+    margin-bottom: 15px;   
+    border: none;   
+    border-radius: 5px;   
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);   
+    transition: all 0.3s ease;   
+}
+
+input[type="text"]:focus, input[type="password"]:focus {   
+    outline: none;   
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);   
+}
+
+button {   
+    width: 100%;   
+    padding: 10px;   
+    background-color: #3498db;   
+    color: white;   
+    border: none;   
+    border-radius: 5px;   
+    cursor: pointer;   
+    transition: all 0.3s ease;   
+}
+
+button:hover {   
+    background-color: #2980b9;   
+}

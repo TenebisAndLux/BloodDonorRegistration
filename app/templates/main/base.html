@@ -1,13 +1,19 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="eu">
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main_styles.css') }}">
     <title>{% block title %}{% endblock %}</title>
 </head>
 <body>
+    <header>
+        {% block header %}Проверка{% endblock %}
+    </header>
     <div>
         {% block content %}{% endblock %}
     </div>
+    <footer>
+        {% block footer %}{% endblock %}
+    </footer>
 </body>
 </html>
-
