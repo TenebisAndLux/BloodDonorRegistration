@@ -1,6 +1,6 @@
 from ..extensions import db
 
-class Reports(db.Model):
+class Report(db.Model):
     __tablename__ = 'Reports'
     id = db.Column(db.Integer, primary_key=True)
     report_type = db.Column(db.String(50), nullable=False)
