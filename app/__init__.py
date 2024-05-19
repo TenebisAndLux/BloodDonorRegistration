@@ -10,10 +10,20 @@ from .routes.add_donor import donor
 from .routes.donor_list import donor_list
 from .routes.information_system import information_system
 
+from .routes.doctor import doctor
+from .routes.medical_history import medical_history
+from .routes.report import report
+from .routes.blood_collections import blood_collection
+
 
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
+
+    app.register_blueprint(doctor)
+    app.register_blueprint(medical_history)
+    app.register_blueprint(report)
+    app.register_blueprint(blood_collection)
 
     app.register_blueprint(main)
     app.register_blueprint(login)

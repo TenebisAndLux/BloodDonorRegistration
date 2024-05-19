@@ -208,6 +208,30 @@ document.getElementById('editDonorForm').addEventListener('submit', function(eve
 </script>
 
 
+<script>
+    function getDonors() {
+        fetch('/donor/list/get')
+            .then(response => response.json())
+            .then(donors => {
+                const donorsTable = document.getElementById('donors');
+                donorsTable.innerHTML = '';
+                for (const donor of donors) {
+                    const row = document.createElement('tr');
+                    for (const key in donor) {
+                        const cell = document.createElement('td');
+                        cell.textContent = JSON.stringify(JSON.parse(JSON.stringify(donor[key])));
+                        row.appendChild(cell);
+                    }
+                    donorsTable.appendChild(row);
+                }
+            })
+            .catch(error => console.error(error));
+    }
+
+    document.addEventListener('DOMContentLoaded', getDonors);
+    document.addEventListener('reload', getDonors);
+</script>
+
 <table class="donors-list">
     <thead>
     <tr>
