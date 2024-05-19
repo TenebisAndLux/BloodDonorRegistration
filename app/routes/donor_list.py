@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template
 
-login = Blueprint('login', __name__)
+donor_list = Blueprint('donor_list', __name__)
 
 
-@login.route('/login')
+@donor_list.route('/donor/list')
 def index():
-    return render_template('main/login.html')
+    return render_template('main/index.html')

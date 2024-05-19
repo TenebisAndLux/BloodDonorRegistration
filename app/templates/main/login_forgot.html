@@ -1,0 +1,34 @@
+{% extends 'main/login.html' %}
+
+{% block title %}
+  Восстановление пароля
+{% endblock %}
+
+{% block header %}
+<header>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/libs/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+</header>
+<div class="header">
+  <h1>Добро пожаловать в систему учета доноров крови</h1>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+  <div class="login">
+    <form action="/forgot_password" method="post" id="login-form">
+      <label for="email">E-mail:</label>
+      <input type="email" id="email" name="email" placeholder="Введите ваш e-mail" required autofocus>
+
+      <button type="submit" id="login-button">Отправить пароль</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block footer %}
+<div class="footer">
+  <span>Разработка и поддержка - ООО "DONOR MIRROR"</span>
+</div>
+{% endblock %}
