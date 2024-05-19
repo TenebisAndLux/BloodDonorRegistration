@@ -1,4 +1,4 @@
-from .extentions import db
+from .extensions import db
 
 
 class Donors(db.Model):

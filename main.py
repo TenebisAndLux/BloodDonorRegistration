@@ -2,7 +2,7 @@ from flask import redirect, render_template, current_app, Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
-from wtforms.validators import DataRequired, Email, EqualTo, Length
+from wtforms.validators import DataRequired, Email
 from flask_login import LoginManager, login_user, login_required, current_user, logout_user
 from config import host, user, password, port, db_name
 
