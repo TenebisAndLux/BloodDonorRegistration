@@ -1,16 +1,9 @@
 from flask import redirect, render_template, current_app, Flask
-from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
-from wtforms.validators import DataRequired, Email
+from wtforms.validators import DataRequired, Email, EqualTo, Length
 from flask_login import LoginManager, login_user, login_required, current_user, logout_user
 from config import host, user, password, port, db_name
-
-app = Flask(__name__, static_folder='static', template_folder='templates')
-app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{user}:{password}@{host}:{port}/{db_name}'
-db = SQLAlchemy(app)
-with app.app_context():
-    db.create_all()
 
 class LoginForm(FlaskForm):
     username = StringField('Логин', validators=[DataRequired()])
