@@ -8,6 +8,6 @@ def index():
     return render_template('main/login.html')
 
 
-# @login.route('/login/examination', method=['POST'])
+# @login.route('/login/examination', methods=['GET'])
 # def examination():
 #     return render_template('main/login.html')

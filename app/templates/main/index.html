@@ -107,7 +107,7 @@
                 </tr>
             </table>
             <div class="modal-add-action-buttons">
-                <button type="submit">Записать</button>
+                <button type="submit" onclick="addDonor()">Записать</button>
             </div>
         </form>
     </div>
@@ -123,10 +123,24 @@ function closeAddModal() {
     document.getElementById('addDonorModal').style.display = 'none';
 }
 
-document.getElementById('addDonorForm').addEventListener('submit', function(event) {
-    event.preventDefault();
-    // Добавьте ваш код для обработки добавления нового донора здесь
-});
+async function addDonor() {
+    const form = document.getElementById('addDonorForm');
+    const formData = new FormData(form);
+    try {
+        const response = await fetch('/donor/add', {
+            method: 'POST',
+            body: formData
+        });
+        if (response.ok) {
+            alert('Донор успешно добавлен.');
+            window.location.reload();
+        } else {
+            throw new Error('Ошибка при добавлении донора.');
+        }
+    } catch (error) {
+        alert(error.message);
+    }
+}
 </script>
 
 <!-- Модальное окно для редактирования данных донора -->
