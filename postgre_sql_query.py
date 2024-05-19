@@ -1,13 +1,19 @@
-from config import host, user, password, port, db_name
+import os
 import psycopg2
+
+HOST = os.environ.get('POSTGRES_HOST')
+USER = os.environ.get('POSTGRES_USER')
+PASSWD = os.environ.get('POSTGRES_PASSWORD')
+DB_NAME = os.environ.get('POSTGRES_DB')
+PORT = os.environ.get('POSTGRES_PORT')
 
 try:
     connection = psycopg2.connect(
-        host=host,
-        user=user,
-        password=password,
-        port=port,
-        database=db_name
+        host=HOST,
+        user=USER,
+        password=PASSWD,
+        port=PORT,
+        database=DB_NAME
     )
     connection.autocommit = True
     cursor = connection.cursor()

@@ -1,8 +1,17 @@
-from ..extensions import db
+from urllib import request
 
-class BloodCollections(db.Model):
-    __tablename__ = 'BloodCollections'
-    id = db.Column(db.Integer, primary_key=True)
-    collection_date = db.Column(db.Date, nullable=False)
-    donor_id = db.Column(db.Integer, db.ForeignKey('Donors.id'), nullable=False)
-    collection_type = db.Column(db.String(50), nullable=False)
+from flask import Blueprint, redirect, url_for, flash, render_template
+from flask_login import login_user
+
+from ..extensions import db
+from ..models.blood_collection import BloodCollection
+
+blood_collection = Blueprint('blood_collection', __name__)
+
+
+@blood_collection.route('/blood_collection/<record>')
+def create_donor(record):
+    blood_collection = BloodCollection(record=record)
+    db.session.add(blood_collection)
+    db.session.commit()
+    return 'BloodCollection be added'

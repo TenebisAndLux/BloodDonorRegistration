@@ -1,9 +1,17 @@
-from ..extensions import db
+from urllib import request
 
-class MedicalHistory(db.Model):
-    __tablename__ = 'MedicalHistory'
-    id = db.Column(db.Integer, primary_key=True)
-    donor_id = db.Column(db.Integer, db.ForeignKey('Donors.id'), nullable=False)
-    last_examination_date = db.Column(db.Date, nullable=False)
-    test_results = db.Column(db.String(255))
-    donation_ban = db.Column(db.Boolean, nullable=False)
+from flask import Blueprint, redirect, url_for, flash, render_template
+from flask_login import login_user
+
+from ..extensions import db
+from ..models.medical_history import MedicalHistory
+
+medical_history = Blueprint('medical_history', __name__)
+
+
+@medical_history.route('/medical_history/<record>')
+def create_donor(record):
+    medical_history = MedicalHistory(record=record)
+    db.session.add(medical_history)
+    db.session.commit()
+    return 'MedicalHistory be added'
