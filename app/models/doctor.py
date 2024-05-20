@@ -10,3 +10,14 @@ class Doctor(db.Model):
     login = db.Column(db.String(50), unique=True, nullable=False)
     password = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(50))
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'position': self.position,
+            'login': self.login,
+            'email': self.email,
+        }
+    
