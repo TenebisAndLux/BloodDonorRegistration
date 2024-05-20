@@ -46,22 +46,6 @@ def forgot_search_doctor():
     except SQLAlchemyError:
         error_message = 'Database error'
         return jsonify({'message': error_message}), 500
-    
-
-@app.route('/send-password-email', methods=['POST'])
-def send_password_email():
-    email = request.json.get('email')
-    password = request.json.get('password')
-
-    msg = Message('Ваш пароль', sender='your-email@gmail.com', recipients=[email])
-    msg.body = f'Ваш временный пароль: {password}'
-
-    try:
-        mail.send(msg)
-        return jsonify({'message': 'Письмо с паролем успешно отправлено'})
-    except Exception as e:
-        print(e)
-        return jsonify({'message': 'Произошла ошибка при отправке письма'}), 500
 
 @doctor.route('/doctor/create', methods=['POST'])
 def create_doctor():
