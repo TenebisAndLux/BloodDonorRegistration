@@ -28,6 +28,25 @@ def search_doctor():
         return jsonify({'message': error_message}), 500
 
 
+@doctor.route('/doctor/forgot/search', methods=['POST'])
+def forgot_search_doctor():
+    login = request.json.get('login')
+    email = request.json.get('email')
+
+    if not (login or email):
+        return jsonify({'message': 'Login or email is required'}), 400
+
+    try:
+        doctor = Doctor.query.filter((Doctor.login == login) | (Doctor.email == email)).first()
+        if doctor:
+            return jsonify({'password': doctor.password}), 200
+
+        error_message = 'Doctor not found'
+        return jsonify({'message': error_message}), 404
+    except SQLAlchemyError:
+        error_message = 'Database error'
+        return jsonify({'message': error_message}), 500
+
 @doctor.route('/doctor/create', methods=['POST'])
 def create_doctor():
     doctor = Doctor(login=request.json.get('login'),
