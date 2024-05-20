@@ -161,8 +161,8 @@ async function addDonor() {
                     <td><input type="date" id="editDonorDateOfBirth" name="editDonorDateOfBirth" required></td>
                     <th><label for="editDonorGender">Пол:</label></th>
                     <td><select id="editDonorGender" name="editDonorGender" required>
-                            <option value="Мужской">Мужской</option>
-                            <option value="Женский">Женский</option>
+                            <option value="M">M</option>
+                            <option value="F">F</option>
                         </select></td>
                     <th><label for="editDonorAddress">Адрес:</label></th>
                     <td><input type="text" id="editDonorAddress" name="editDonorAddress"></td>
@@ -190,77 +190,112 @@ async function addDonor() {
         </form>
     </div>
 </div>
-<script>
-// Открывает модальное окно
-function openModal() {
-    document.getElementById('editDonorModal').style.display = 'block';
-}
-
-// Закрывает модальное окно
-function closeEditModal() {
-    document.getElementById('editDonorModal').style.display = 'none';
-}
-
-document.getElementById('editDonorForm').addEventListener('submit', function(event) {
-    event.preventDefault();
-    // Добавьте ваш код для обработки редактирования данных здесь
-});
-</script>
-
 
 <script>
-    function getDonors() {
-        fetch('/donor/list/get')
-            .then(response => response.json())
-            .then(donors => {
-                const donorsTable = document.getElementById('donors');
-                donorsTable.innerHTML = '';
-                for (const donor of donors) {
-                    const row = document.createElement('tr');
-                    for (const key in donor) {
-                        const cell = document.createElement('td');
-                        cell.textContent = JSON.stringify(JSON.parse(JSON.stringify(donor[key])));
-                        row.appendChild(cell);
-                    }
-                    donorsTable.appendChild(row);
-                }
-            })
-            .catch(error => console.error(error));
+    // Asynchronously opens the modal and fills it with donor data
+    async function openModal(event) {
+        const selectedRow = document.querySelector('tr.selected');
+        const donorId = parseInt(selectedRow.querySelector('td:first-child').innerText);
+        try {
+            const response = await fetch(`/donor/search/${donorId}`);
+            const donor = await response.json();
+            document.getElementById('editDonorFirstName').value = donor.first_name;
+            document.getElementById('editDonorLastName').value = donor.last_name;
+            document.getElementById('editDonorMiddleName').value = donor.middle_name;
+            document.getElementById('editDonorDateOfBirth').valueAsDate = new Date(donor.date_of_birth);
+            document.getElementById('editDonorGender').value = donor.gender;
+            document.getElementById('editDonorAddress').value = donor.address;
+            document.getElementById('editDonorPhoneNumber').value = donor.phone_number;
+            document.getElementById('editDonorHospitalAffiliation').value = donor.hospital_affiliation;
+            document.getElementById('editDonorPassportData').value = donor.passport_data;
+            document.getElementById('editDonorInsuranceData').value = donor.insurance_data;
+            document.getElementById('editDonorBloodType').value = donor.blood_type;
+            document.getElementById('editDonorRhFactor').value = donor.rh_factor;
+            document.getElementById('editDonorModal').style.display = 'block';
+        } catch (error) {
+            console.error('Error fetching donor data:', error);
+        }
     }
 
-    document.addEventListener('DOMContentLoaded', getDonors);
-    document.addEventListener('reload', getDonors);
+    function closeEditModal() {
+        document.getElementById('editDonorModal').style.display = 'none';
+    }
+    
+    document.getElementById('editDonorForm').addEventListener('submit', async function(event) {
+        event.preventDefault();
+        const selectedRow = document.querySelector('tr.selected');
+        const donorId = parseInt(selectedRow.querySelector('td:first-child').innerText);
+        const formData = new FormData(document.getElementById('editDonorForm'));
+        const dateOfBirthInput = document.getElementById('editDonorDateOfBirth').valueAsDate;
+        formData.set('editDonorDateOfBirth', dateOfBirthInput.toISOString().split('T')[0]);
+        try {
+            const response = await fetch(`/donor/edit/${donorId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    first_name: formData.get('editDonorFirstName'),
+                    last_name: formData.get('editDonorLastName'),
+                    middle_name: formData.get('editDonorMiddleName'),
+                    date_of_birth: formData.get('editDonorDateOfBirth'),
+                    gender: formData.get('editDonorGender'),
+                    address: formData.get('editDonorAddress'),
+                    phone_number: formData.get('editDonorPhoneNumber'),
+                    hospital_affiliation: formData.get('editDonorHospitalAffiliation'),
+                    passport_data: formData.get('editDonorPassportData'),
+                    insurance_data: formData.get('editDonorInsuranceData'),
+                    blood_type: formData.get('editDonorBloodType'),
+                    rh_factor: formData.get('editDonorRhFactor')
+                })
+            });
+            if (response.ok) {
+                closeEditModal();
+                getDonors();
+            } else {
+                throw new Error(`Ошибка при редактировании данных донора. donorID: ${donorId}`);
+            }
+        } catch (error) {
+            console.error('Error editing donor data:', error);
+        }
+    });
 </script>
+
+<script src="{{ url_for('static', filename='js/donorList.js') }}"></script>
 
 <table class="donors-list">
     <thead>
     <tr>
-        <th>Амб.карта</th>
+        <th>ID</th>
+        <th>Прикрепление</th>
         <th>ФИО</th>
         <th>Д/Р</th>
-        <th>Прикрепление</th>
+        <th>Адрес</th>
+        <th>Номер телефона</th>
         <th>Полис</th>
         <th>Группа крови</th>
         <th>Ресус-фактор</th>
-        <th>Дата последней сдачи крови</th>
-        <th>Возможность повторного взятия крови</th>
+        <th></th>
     </tr>
     </thead>
     <tbody id="donors">
     </tbody>
 </table>
 
+<script src="{{ url_for('static', filename='js/getHistory.js') }}"></script>
+
 <table class="donors-list-history">
     <thead>
     <tr>
-        <th colspan="6">История и записи</th>
+        <th colspan="7">История и записи</th>
     </tr>
     <tr>
-        <th>Амб.карта</th>
-        <th>ФИО</th>
-        <th>Д/Р</th>
+        <th>ID</th>
         <th>Прикрепление</th>
+        <th>ФИО</th>
         <th>Полис</th>
+        <th>Результаты</th>
+        <th>Возможность повторного взятия крови</th>
         <th>Дата последнего изменения</th>
     </tr>
     </thead>

@@ -1,57 +1,53 @@
-from flask import Blueprint, render_template, flash, redirect, url_for, request
+from flask import Blueprint, render_template, flash, redirect, url_for, request, jsonify
+from werkzeug.exceptions import NotFound
+
 from ..extensions import db
 from ..models.donor import Donor
 
 donor = Blueprint('donor', __name__)
 
 
-@donor.route('/donor/add', methods=['GET', 'POST'])
+@donor.route('/donor/add', methods=['POST'])
 def create():
-    if request.method == 'POST':
-        donor = Donor(
-            first_name=request.form['addDonorFirstName'],
-            last_name=request.form['addDonorLastName'],
-            middle_name=request.form['addDonorMiddleName'],
-            date_of_birth=request.form['addDonorDateOfBirth'],
-            gender=request.form['addDonorGender'],
-            address=request.form['addDonorAddress'],
-            phone_number=request.form['addDonorPhoneNumber'],
-            hospital_affiliation=request.form['addDonorHospitalAffiliation'],
-            passport_data=request.form['addDonorPassportData'],
-            insurance_data=request.form['addDonorInsuranceData'],
-            blood_type=request.form['addDonorBloodType'],
-            rh_factor=request.form['addDonorRhFactor']
-        )
-        db.session.add(donor)
-        db.session.commit()
-        flash('Donor created successfully.')
-        return redirect(url_for('donor.add', donor_id=donor.id))
-    else:
-        return render_template('main/index.html')
+    data = request.get_json()
+    donor = Donor(
+        first_name=data.get('addDonorFirstName'),
+        last_name=data.get('addDonorLastName'),
+        middle_name=data.get('addDonorMiddleName'),
+        date_of_birth=data.get('addDonorDateOfBirth'),
+        gender=data.get('addDonorGender'),
+        address=data.get('addDonorAddress'),
+        phone_number=data.get('addDonorPhoneNumber'),
+        hospital_affiliation=data.get('addDonorHospitalAffiliation'),
+        passport_data=data.get('addDonorPassportData'),
+        insurance_data=data.get('addDonorInsuranceData'),
+        blood_type=data.get('addDonorBloodType'),
+        rh_factor=data.get('addDonorRhFactor')
+    )
+    db.session.add(donor)
+    db.session.commit()
+    return jsonify({'message': 'Donor created successfully.', 'id': donor.id})
 
 
-@donor.route('/donor/edit/<int:donor_id>', methods=['GET', 'POST'])
+@donor.route('/donor/edit/<int:donor_id>', methods=['POST'])
 def edit(donor_id):
     donor = Donor.query.get(donor_id)
-    if donor and request.method == 'POST':
-        donor.first_name = request.form.get('editDonorFirstName')
-        donor.last_name = request.form.get('editDonorLastName')
-        donor.middle_name = request.form.get('editDonorMiddleName')
-        donor.date_of_birth = request.form.get('editDonorDateOfBirth')
-        donor.gender = request.form.get('editDonorGender')
-        donor.address = request.form.get('editDonorAddress')
-        donor.phone_number = request.form.get('editDonorPhoneNumber')
-        donor.hospital_affiliation = request.form.get('editDonorHospitalAffiliation')
-        donor.passport_data = request.form.get('editDonorPassportData')
-        donor.insurance_data = request.form.get('editDonorInsuranceData')
-        donor.blood_type = request.form.get('editDonorBloodType')
-        donor.rh_factor = request.form.get('editDonorRhFactor')
+    if donor:
+        data = request.get_json()
+        for field in donor.to_dict():
+            if field in data:
+                setattr(donor, field, data[field])
         db.session.commit()
-        flash('Donor updated successfully.')
-    return redirect(url_for('donor.add', donor_id=donor_id))
+        return jsonify({'message': 'Donor updated successfully.'})
+    return jsonify({'message': 'Donor not found.'}), 404
 
 
-@donor.route('/donor/search/<int:donor_id>', methods=['GET'])
-def search(donor_id):
-    donor = Donor.query.get(donor_id)
-    return donor
+@donor.route('/donor/search/<int:id>', methods=['GET'])
+def search(id):
+    try:
+        donor = Donor.query.get_or_404(id)
+        return jsonify(donor.to_dict())
+    except NotFound:
+        return jsonify({'message': 'Donor not found.'}), 404
+    except Exception:
+        return jsonify({'message': 'An error occurred.'}), 500
