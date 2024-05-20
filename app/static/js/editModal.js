@@ -58,7 +58,7 @@
             if (response.ok) {
                 closeEditModal();
                 getDonors();
-                addMedicalHistory()
+                addMedicalHistory('edit')
             } else {
                 throw new Error(`Ошибка при редактировании данных донора. donorID: ${donorId}`);
             }

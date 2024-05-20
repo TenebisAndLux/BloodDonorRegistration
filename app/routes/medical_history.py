@@ -44,5 +44,13 @@ def create_medical_history():
         db.session.add(medical_history)
         db.session.commit()
         return jsonify({'success': 'Medical History created successfully'})
+    
+    except KeyError as e:
+        return jsonify({'error': 'Отсутствует обязательный ключ в запросе'}), 400
+    
+    except IntegrityError as e:
+        db.session.rollback()
+        return jsonify({'error': 'Ошибка с целостностью данных в БД'}), 400
+        
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': 'Внутренняя ошибка сервера', 'exception': str(e)}), 500

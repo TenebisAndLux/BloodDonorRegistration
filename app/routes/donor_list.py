@@ -8,7 +8,8 @@ donor_list = Blueprint('donor_list', __name__)
 @donor_list.route('/donor/list/get', methods=['GET'])
 def get():
     try:
-        donors = Donor.query.all()
+        order = request.args.get('order', 'asc')
+        donors = Donor.query.order_by(Donor.id.asc() if order == 'asc' else Donor.id.desc()).all()
         donors_list = []
         for donor in donors:
             donor_dict = {

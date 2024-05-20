@@ -19,38 +19,68 @@
         </div>
     </div>
 </div>
+<script>
+    function setTrueShouldGetDonorsState() {
+        saveShouldGetDonorsState(true);
+    }
+
+    function setFalseShouldGetDonorsState() {
+        saveShouldGetDonorsState(false);
+    }
+    function saveShouldGetDonorsState(state) {
+        localStorage.setItem('shouldGetDonors', state);
+    }
+
+    function getShouldGetDonorsState() {
+        return localStorage.getItem('shouldGetDonors') === 'true';
+    }
+</script>
 <script src="{{ url_for('static', filename='js/index_scripts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/search.js') }}"></script></script>
+
 <div class="search-container">
-    <form action="/search" method="post">
+    <form id="search-form">
         <table>
             <tr>
                 <th><label for="last_name">Фамилия:</label></th>
-                <td><input type="text" id="last_name" name="last_name" required></td>
-                <th><label for="address">Адрес:</label></th>
-                <td><input type="text" id="address" name="address" required></td>
-                <th><label for="blood_type">Группа крови:</label></th>
-                <td><input type="text" id="blood_type" name="blood_type" required></td>
-            </tr>
-            <tr>
-                <th><label for="first_name">Имя:</label></th>
-                <td><input type="text" id="first_name" name="first_name" required></td>
-                <th><label for="house">Дом:</label></th>
-                <td><input type="text" id="house" name="house" required></td>
-                <th><label for="rh_factor">Резус Фактор:</label></th>
-                <td><input type="text" id="rh_factor" name="rh_factor" required></td>
-            </tr>
-            <tr>
+                <td><input type="text" id="last_name" name="last_name"></td>
+
                 <th><label for="middle_name">Отчество:</label></th>
-                <td><input type="text" id="middle_name" name="middle_name" required></td>
-                <th><label for="snils">СНИЛС:</label></th>
-                <td><input type="text" id="snils" name="snils" required></td>
-                <th><label for="birth_date">Д/Р:</label></th>
-                <td><input type="date" id="birth_date" name="birth_date" required></td>
+                <td><input type="text" id="middle_name" name="middle_name"></td>
+
+                <th><label for="first_name">Имя:</label></th>
+                <td><input type="text" id="first_name" name="first_name"></td>
             </tr>
+            <tr>
+                <th><label for="hospital_affiliation">Прикрепление:</label></th>
+                <td><input type="text" id="hospital_affiliation" name="hospital_affiliation"></td>
+
+                <th><label for="address">Адрес:</label></th>
+                <td><input type="text" id="address" name="address"></td>
+
+                <th><label for="phone_number">Номер телефона:</label></th>
+                <td><input type="text" id="phone_number" name="phone_number"></td>
+            </tr>
+
+            <tr>
+                <th><label for="insurance_data">Полис:</label></th>
+                <td><input type="text" id="insurance_data" name="insurance_data"></td>
+
+                <th><label for="date_of_birth">Д/Р:</label></th>
+                <td><input type="date" id="date_of_birth" name="date_of_birth"></td>
+            </tr>
+            <tr>
+                <th><label for="blood_type">Группа крови:</label></th>
+                <td><input type="text" id="blood_type" name="blood_type"></td>
+
+                <th><label for="rh_factor">Ресус-фактор:</label></th>
+                <td><input type="text" id="rh_factor" name="rh_factor"></td>
+            </tr>
+
             <tr>
                 <td colspan="6" style="text-align: right;">
-                    <button type="reset">Очистить</button>
-                    <button type="submit">Найти</button>
+                    <button type="search" onclick="setFalseShouldGetDonorsState(); searchDonors()">Найти</button>
+                    <button type="reset" onclick="setTrueShouldGetDonorsState(); getDonors()">Очистить</button>
                 </td>
             </tr>
         </table>
@@ -60,7 +90,6 @@
 <div class="action-buttons">
     <button onclick="addDonorModal()">Записать</button>
     <button onclick="openModal()">Редактировать данные</button>
-    <button onclick="requestBlood()">Запросить кровь</button>
 </div>
 
 <!-- Модальное окно для добавления нового донора -->
@@ -82,8 +111,8 @@
                     <td><input type="date" id="addDonorDateOfBirth" name="addDonorDateOfBirth" required></td>
                     <th><label for="addDonorGender">Пол:</label></th>
                     <td><select id="addDonorGender" name="addDonorGender" required>
-                            <option value="Мужской">Мужской</option>
-                            <option value="Женский">Женский</option>
+                            <option value="M">M</option>
+                            <option value="F">F</option>
                         </select></td>
                     <th><label for="addDonorAddress">Адрес:</label></th>
                     <td><input type="text" id="addDonorAddress" name="addDonorAddress"></td>
@@ -106,41 +135,12 @@
                 </tr>
             </table>
             <div class="modal-add-action-buttons">
-                <button type="submit" onclick="addDonor()">Записать</button>
+                <button type="submit">Записать</button>
             </div>
         </form>
     </div>
 </div>
-<script>
-// Открывает модальное окно
-function addDonorModal() {
-    document.getElementById('addDonorModal').style.display = 'block';
-}
-
-// Закрывает модальное окно
-function closeAddModal() {
-    document.getElementById('addDonorModal').style.display = 'none';
-}
-
-async function addDonor() {
-    const form = document.getElementById('addDonorForm');
-    const formData = new FormData(form);
-    try {
-        const response = await fetch('/donor/add', {
-            method: 'POST',
-            body: formData
-        });
-        if (response.ok) {
-            alert('Донор успешно добавлен.');
-            window.location.reload();
-        } else {
-            throw new Error('Ошибка при добавлении донора.');
-        }
-    } catch (error) {
-        alert(error.message);
-    }
-}
-</script>
+<script src = "{{ url_for('static', filename='js/addModal.js') }}"></script>
 
 <!-- Модальное окно для редактирования данных донора -->
 <div id="editDonorModal" class="modal-edit">
@@ -246,7 +246,6 @@ async function addDonor() {
     <span>Разработка и поддержка - ООО "DONOR MIRROR"</span>
 </div>
 
-<script src="scripts.js"></script>
 </body>
 
 </html>
