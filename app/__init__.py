@@ -8,6 +8,10 @@ from .routes.login import login
 from .routes.forgot_login import forgot_login
 from .routes.add_donor import donor
 from .routes.donor_list import donor_list
+from .routes.doctor_info import doctor_info
+from .routes.blood_bank import blood_bank
+from .routes.hospital_info import hospital_info
+from .routes.report_system import report_system
 from .routes.information_system import information_system
 
 from .routes.doctor import doctor
@@ -31,6 +35,10 @@ def create_app(config_class=Config):
     app.register_blueprint(information_system)
     app.register_blueprint(donor)
     app.register_blueprint(donor_list)
+    app.register_blueprint(doctor_info)
+    app.register_blueprint(blood_bank)
+    app.register_blueprint(hospital_info)
+    app.register_blueprint(report_system)
 
     db.init_app(app)
     migrate.init_app(app, db)

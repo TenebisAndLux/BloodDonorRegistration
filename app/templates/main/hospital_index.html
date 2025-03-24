@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Система учета доноров крови - Медицинские учреждения</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main_styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/list_styles.css') }}">
+</head>
+<body>
+<div class="header">
+    <div class="hospital-name">Больница имени Н.И. Пирогова</div>
+    <div class="name-container" onmouseenter="showLogoutButton()" onmouseleave="hideLogoutButton()">
+        <div class="name" onfocus="showLogoutButton()">
+            Петрова А.С. (Администратор)
+        </div>
+        <div class="exit-button" style="display: none" onmouseenter="showLogoutButton()"
+             onmouseleave="hideLogoutButton()" onclick="location.href='/login'">Выход
+        </div>
+    </div>
+</div>
+
+<div class="search-container">
+    <form id="search-form">
+        <table>
+            <tr>
+                <th><label for="institution_name">Название:</label></th>
+                <td><input type="text" id="institution_name" name="institution_name"></td>
+
+                <th><label for="institution_type">Тип:</label></th>
+                <td>
+                    <select id="institution_type" name="institution_type">
+                        <option value="">Все</option>
+                        <option value="Больница">Больница</option>
+                        <option value="Поликлиника">Поликлиника</option>
+                        <option value="Центр крови">Центр крови</option>
+                    </select>
+                </td>
+
+                <th><label for="institution_address">Адрес:</label></th>
+                <td><input type="text" id="institution_address" name="institution_address"></td>
+            </tr>
+            <tr>
+                <td colspan="6" style="text-align: right;">
+                    <button type="button" onclick="searchInstitutions()">Найти</button>
+                    <button type="reset" onclick="resetSearch()">Очистить</button>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+
+<div class="action-buttons">
+    <button onclick="addInstitutionModal()">Добавить учреждение</button>
+    <button onclick="editInstitutionModal()">Редактировать данные</button>
+</div>
+
+<!-- Модальное окно для добавления нового учреждения -->
+<div id="addInstitutionModal" class="modal-add">
+    <div class="modal-add-content">
+        <span class="close" onclick="closeAddModal()">&times;</span>
+        <form id="addInstitutionForm">
+            <table>
+                <tr>
+                    <th><label for="addInstitutionName">Название:</label></th>
+                    <td colspan="3"><input type="text" id="addInstitutionName" name="addInstitutionName" required></td>
+                </tr>
+                <tr>
+                    <th><label for="addInstitutionType">Тип:</label></th>
+                    <td>
+                        <select id="addInstitutionType" name="addInstitutionType" required>
+                            <option value="Больница">Больница</option>
+                            <option value="Поликлиника">Поликлиника</option>
+                            <option value="Центр крови">Центр крови</option>
+                        </select>
+                    </td>
+                    <th><label for="addInstitutionCode">Код:</label></th>
+                    <td><input type="text" id="addInstitutionCode" name="addInstitutionCode" required></td>
+                </tr>
+                <tr>
+                    <th><label for="addInstitutionAddress">Адрес:</label></th>
+                    <td colspan="3"><input type="text" id="addInstitutionAddress" name="addInstitutionAddress" required></td>
+                </tr>
+                <tr>
+                    <th><label for="addInstitutionPhone">Телефон:</label></th>
+                    <td><input type="text" id="addInstitutionPhone" name="addInstitutionPhone" required></td>
+                    <th><label for="addInstitutionEmail">Email:</label></th>
+                    <td><input type="email" id="addInstitutionEmail" name="addInstitutionEmail"></td>
+                </tr>
+            </table>
+            <div class="modal-add-action-buttons">
+                <button type="submit">Добавить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Модальное окно для редактирования данных учреждения -->
+<div id="editInstitutionModal" class="modal-edit">
+    <div class="modal-edit-content">
+        <span class="close" onclick="closeEditModal()">&times;</span>
+        <form id="editInstitutionForm">
+            <table>
+                <tr>
+                    <th><label for="editInstitutionName">Название:</label></th>
+                    <td colspan="3"><input type="text" id="editInstitutionName" name="editInstitutionName" required></td>
+                </tr>
+                <tr>
+                    <th><label for="editInstitutionType">Тип:</label></th>
+                    <td>
+                        <select id="editInstitutionType" name="editInstitutionType" required>
+                            <option value="Больница">Больница</option>
+                            <option value="Поликлиника">Поликлиника</option>
+                            <option value="Центр крови">Центр крови</option>
+                        </select>
+                    </td>
+                    <th><label for="editInstitutionCode">Код:</label></th>
+                    <td><input type="text" id="editInstitutionCode" name="editInstitutionCode" required readonly></td>
+                </tr>
+                <tr>
+                    <th><label for="editInstitutionAddress">Адрес:</label></th>
+                    <td colspan="3"><input type="text" id="editInstitutionAddress" name="editInstitutionAddress" required></td>
+                </tr>
+                <tr>
+                    <th><label for="editInstitutionPhone">Телефон:</label></th>
+                    <td><input type="text" id="editInstitutionPhone" name="editInstitutionPhone" required></td>
+                    <th><label for="editInstitutionEmail">Email:</label></th>
+                    <td><input type="email" id="editInstitutionEmail" name="editInstitutionEmail"></td>
+                </tr>
+            </table>
+            <div class="modal-edit-action-buttons">
+                <button type="submit">Сохранить</button>
+                <button type="button" onclick="deleteInstitution()">Удалить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<table class="institutions-list">
+    <thead>
+    <tr>
+        <th>Код</th>
+        <th>Название</th>
+        <th>Тип</th>
+        <th>Адрес</th>
+        <th>Телефон</th>
+        <th>Email</th>
+    </tr>
+    </thead>
+    <tbody>
+        <!-- Пример данных из БД -->
+        <tr onclick="selectInstitution(this)" data-id="1">
+            <td>1</td>
+            <td>Городская больница №1</td>
+            <td>Больница</td>
+            <td>ул. Ленина, 10</td>
+            <td>+7 (495) 111-22-33</td>
+            <td>info@hospital1.ru</td>
+        </tr>
+        <tr onclick="selectInstitution(this)" data-id="2">
+            <td>2</td>
+            <td>Центр крови</td>
+            <td>Центр крови</td>
+            <td>ул. Пушкина, 5</td>
+            <td>+7 (495) 222-33-44</td>
+            <td>info@bloodcenter.ru</td>
+        </tr>
+        <tr onclick="selectInstitution(this)" data-id="3">
+            <td>3</td>
+            <td>Поликлиника №3</td>
+            <td>Поликлиника</td>
+            <td>ул. Гагарина, 15</td>
+            <td>+7 (495) 333-44-55</td>
+            <td>info@clinic3.ru</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="save-load-buttons">
+    <button onclick="saveInstitutions()">Экспорт в CSV</button>
+    <button onclick="loadCSV()">Импорт из CSV</button>
+    <input type="file" id="file" onchange="uploadCSV()" style="display: none;">
+</div>
+
+<div class="footer">
+    <span>Разработка и поддержка - ООО "DONOR MIRROR"</span>
+</div>
+
+<script src="{{ url_for('static', filename='js/institutionList.js') }}"></script>
+<script src="{{ url_for('static', filename='js/mainScripts.js') }}"></script>
+</body>
+</html>

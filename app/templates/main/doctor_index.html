@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Система учета доноров крови - Врачи</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main_styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/list_styles.css') }}">
+</head>
+<body>
+<div class="header">
+    <div class="hospital-name">Больница имени Н.И. Пирогова</div>
+    <div class="name-container" onmouseenter="showLogoutButton()" onmouseleave="hideLogoutButton()">
+        <div class="name" onfocus="showLogoutButton()">
+            Петрова А.С. (Администратор)
+        </div>
+        <div class="exit-button" style="display: none" onmouseenter="showLogoutButton()"
+             onmouseleave="hideLogoutButton()" onclick="location.href='/login'">Выход
+        </div>
+    </div>
+</div>
+
+<div class="search-container">
+    <form id="search-form">
+        <table>
+            <tr>
+                <th><label for="last_name">Фамилия:</label></th>
+                <td><input type="text" id="last_name" name="last_name"></td>
+
+                <th><label for="first_name">Имя:</label></th>
+                <td><input type="text" id="first_name" name="first_name"></td>
+
+                <th><label for="middle_name">Отчество:</label></th>
+                <td><input type="text" id="middle_name" name="middle_name"></td>
+            </tr>
+            <tr>
+                <th><label for="service_number">Табельный номер:</label></th>
+                <td><input type="text" id="service_number" name="service_number"></td>
+
+                <th><label for="position">Должность:</label></th>
+                <td><input type="text" id="position" name="position"></td>
+
+                <th><label for="department">Отделение:</label></th>
+                <td><input type="text" id="department" name="department"></td>
+            </tr>
+            <tr>
+                <td colspan="6" style="text-align: right;">
+                    <button type="button" onclick="searchDoctors()">Найти</button>
+                    <button type="reset" onclick="resetSearch()">Очистить</button>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+
+<div class="action-buttons">
+    <button onclick="addDoctorModal()">Добавить врача</button>
+    <button onclick="editDoctorModal()">Редактировать данные</button>
+</div>
+
+<!-- Модальное окно для добавления нового врача -->
+<div id="addDoctorModal" class="modal-add">
+    <div class="modal-add-content">
+        <span class="close" onclick="closeAddModal()">&times;</span>
+        <form id="addDoctorForm">
+            <table>
+                <tr>
+                    <th><label for="addDoctorLastName">Фамилия:</label></th>
+                    <td><input type="text" id="addDoctorLastName" name="addDoctorLastName" required></td>
+                    <th><label for="addDoctorFirstName">Имя:</label></th>
+                    <td><input type="text" id="addDoctorFirstName" name="addDoctorFirstName" required></td>
+                    <th><label for="addDoctorMiddleName">Отчество:</label></th>
+                    <td><input type="text" id="addDoctorMiddleName" name="addDoctorMiddleName"></td>
+                </tr>
+                <tr>
+                    <th><label for="addDoctorServiceNumber">Табельный номер:</label></th>
+                    <td><input type="text" id="addDoctorServiceNumber" name="addDoctorServiceNumber" required></td>
+                    <th><label for="addDoctorPosition">Должность:</label></th>
+                    <td><input type="text" id="addDoctorPosition" name="addDoctorPosition" required></td>
+                    <th><label for="addDoctorDepartment">Отделение:</label></th>
+                    <td><input type="text" id="addDoctorDepartment" name="addDoctorDepartment"></td>
+                </tr>
+                <tr>
+                    <th><label for="addDoctorPhone">Телефон:</label></th>
+                    <td><input type="text" id="addDoctorPhone" name="addDoctorPhone"></td>
+                    <th><label for="addDoctorEmail">Email:</label></th>
+                    <td><input type="email" id="addDoctorEmail" name="addDoctorEmail"></td>
+                    <th><label for="addDoctorInstitution">Учреждение:</label></th>
+                    <td>
+                        <select id="addDoctorInstitution" name="addDoctorInstitution" required>
+                            <option value="1">Городская больница №1</option>
+                            <option value="2">Центр крови</option>
+                            <option value="3">Поликлиника №3</option>
+                        </select>
+                    </td>
+                </tr>
+            </table>
+            <div class="modal-add-action-buttons">
+                <button type="submit">Добавить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Модальное окно для редактирования данных врача -->
+<div id="editDoctorModal" class="modal-edit">
+    <div class="modal-edit-content">
+        <span class="close" onclick="closeEditModal()">&times;</span>
+        <form id="editDoctorForm">
+            <table>
+                <tr>
+                    <th><label for="editDoctorLastName">Фамилия:</label></th>
+                    <td><input type="text" id="editDoctorLastName" name="editDoctorLastName" required></td>
+                    <th><label for="editDoctorFirstName">Имя:</label></th>
+                    <td><input type="text" id="editDoctorFirstName" name="editDoctorFirstName" required></td>
+                    <th><label for="editDoctorMiddleName">Отчество:</label></th>
+                    <td><input type="text" id="editDoctorMiddleName" name="editDoctorMiddleName"></td>
+                </tr>
+                <tr>
+                    <th><label for="editDoctorServiceNumber">Табельный номер:</label></th>
+                    <td><input type="text" id="editDoctorServiceNumber" name="editDoctorServiceNumber" required readonly></td>
+                    <th><label for="editDoctorPosition">Должность:</label></th>
+                    <td><input type="text" id="editDoctorPosition" name="editDoctorPosition" required></td>
+                    <th><label for="editDoctorDepartment">Отделение:</label></th>
+                    <td><input type="text" id="editDoctorDepartment" name="editDoctorDepartment"></td>
+                </tr>
+                <tr>
+                    <th><label for="editDoctorPhone">Телефон:</label></th>
+                    <td><input type="text" id="editDoctorPhone" name="editDoctorPhone"></td>
+                    <th><label for="editDoctorEmail">Email:</label></th>
+                    <td><input type="email" id="editDoctorEmail" name="editDoctorEmail"></td>
+                    <th><label for="editDoctorInstitution">Учреждение:</label></th>
+                    <td>
+                        <select id="editDoctorInstitution" name="editDoctorInstitution" required>
+                            <option value="1">Городская больница №1</option>
+                            <option value="2">Центр крови</option>
+                            <option value="3">Поликлиника №3</option>
+                        </select>
+                    </td>
+                </tr>
+            </table>
+            <div class="modal-edit-action-buttons">
+                <button type="submit">Сохранить</button>
+                <button type="button" onclick="deleteDoctor()">Удалить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<table class="doctors-list">
+    <thead>
+    <tr>
+        <th>Таб. номер</th>
+        <th>ФИО</th>
+        <th>Должность</th>
+        <th>Отделение</th>
+        <th>Учреждение</th>
+        <th>Телефон</th>
+        <th>Email</th>
+    </tr>
+    </thead>
+    <tbody>
+        <!-- Пример данных из БД -->
+        <tr onclick="selectDoctor(this)" data-id="101">
+            <td>101</td>
+            <td>Иванов Иван Иванович</td>
+            <td>Терапевт</td>
+            <td>Терапевтическое</td>
+            <td>Городская больница №1</td>
+            <td>+7 (123) 456-78-90</td>
+            <td>ivanov@hospital.ru</td>
+        </tr>
+        <tr onclick="selectDoctor(this)" data-id="102">
+            <td>102</td>
+            <td>Петрова Анна Сергеевна</td>
+            <td>Гематолог</td>
+            <td>Гематологическое</td>
+            <td>Центр крови</td>
+            <td>+7 (123) 456-78-91</td>
+            <td>petrova@bloodcenter.ru</td>
+        </tr>
+        <tr onclick="selectDoctor(this)" data-id="103">
+            <td>103</td>
+            <td>Сидоров Михаил Петрович</td>
+            <td>Хирург</td>
+            <td>Хирургическое</td>
+            <td>Поликлиника №3</td>
+            <td>+7 (123) 456-78-92</td>
+            <td>sidorov@clinic.ru</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="save-load-buttons">
+    <button onclick="saveDoctors()">Экспорт в CSV</button>
+    <button onclick="loadCSV()">Импорт из CSV</button>
+    <input type="file" id="file" onchange="uploadCSV()" style="display: none;">
+</div>
+
+<div class="footer">
+    <span>Разработка и поддержка - ООО "DONOR MIRROR"</span>
+</div>
+
+<script src="{{ url_for('static', filename='js/doctorList.js') }}"></script>
+<script src="{{ url_for('static', filename='js/mainScripts.js') }}"></script>
+</body>
+</html>
