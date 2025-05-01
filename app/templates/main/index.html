@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,122 +9,78 @@
 </head>
 <body>
 <div class="header">
-    <div class="hospital-name" id="hospital-name">Загрузка...</div>
+    <div class="hospital-name">Больница имени Н.И. Пирогова</div>
     <div class="name-container" onmouseenter="showLogoutButton()" onmouseleave="hideLogoutButton()">
-        <div class="name" onfocus="showLogoutButton()" id="doctor-name">
-            Загрузка...
+        <div class="name" onfocus="showLogoutButton()">
+            Иванов И.И.
         </div>
         <div class="exit-button" style="display: none" onmouseenter="showLogoutButton()"
              onmouseleave="hideLogoutButton()" onclick="location.href='/login'">Выход
         </div>
     </div>
 </div>
-
 <script>
-    // Загружаем данные врача и учреждения при загрузке страницы
-    document.addEventListener('DOMContentLoaded', function() {
-    // Функция для скрытия индикатора загрузки
-    function hideLoading() {
-        const loadingElement = document.getElementById('loading');
-        if (loadingElement) {
-            loadingElement.style.display = 'none';
-        }
+    function setTrueShouldGetDonorsState() {
+        saveShouldGetDonorsState(true);
     }
 
-    // Загружаем данные врача
-    fetch('/doctor/current')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.error) {
-                console.error('Server error:', data.error);
-                document.getElementById('doctor-name').textContent = 'Врач не найден';
-                document.getElementById('hospital-name').textContent = 'Учреждение не найдено';
-            } else {
-                document.getElementById('doctor-name').textContent = data.secondname + ' ' + data.name.charAt(0) + '.';
-                document.getElementById('hospital-name').textContent = data.institutionname;
-            }
-            searchDonors(); // Вызываем поиск доноров
-            hideLoading(); // Скрываем индикатор загрузки
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            document.getElementById('doctor-name').textContent = 'Ошибка загрузки';
-            document.getElementById('hospital-name').textContent = 'Ошибка загрузки';
-            searchDonors(); // Вызываем поиск доноров даже при ошибке
-            hideLoading(); // Скрываем индикатор загрузки
-        });
-});
+    function setFalseShouldGetDonorsState() {
+        saveShouldGetDonorsState(false);
+    }
+    function saveShouldGetDonorsState(state) {
+        localStorage.setItem('shouldGetDonors', state);
+    }
 
-// Функции для работы с состоянием shouldGetDonors
-function setTrueShouldGetDonorsState() {
-    localStorage.setItem('shouldGetDonors', 'true');
-}
-
-function setFalseShouldGetDonorsState() {
-    localStorage.setItem('shouldGetDonors', 'false');
-}
-
-function getShouldGetDonorsState() {
-    return localStorage.getItem('shouldGetDonors') === 'true';
-}
+    function getShouldGetDonorsState() {
+        return localStorage.getItem('shouldGetDonors') === 'true';
+    }
 </script>
+<script src="{{ url_for('static', filename='js/index_scripts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/search.js') }}"></script></script>
 
 <div class="search-container">
     <form id="search-form">
         <table>
             <tr>
-                <th><label for="surname">Фамилия:</label></th>
-                <td><input type="text" id="surname" name="surname"></td>
+                <th><label for="last_name">Фамилия:</label></th>
+                <td><input type="text" id="last_name" name="last_name"></td>
 
-                <th><label for="name">Имя:</label></th>
-                <td><input type="text" id="name" name="name"></td>
+                <th><label for="middle_name">Отчество:</label></th>
+                <td><input type="text" id="middle_name" name="middle_name"></td>
 
-                <th><label for="secondname">Отчество:</label></th>
-                <td><input type="text" id="secondname" name="secondname"></td>
+                <th><label for="first_name">Имя:</label></th>
+                <td><input type="text" id="first_name" name="first_name"></td>
             </tr>
             <tr>
+                <th><label for="hospital_affiliation">Прикрепление:</label></th>
+                <td><input type="text" id="hospital_affiliation" name="hospital_affiliation"></td>
+
                 <th><label for="address">Адрес:</label></th>
                 <td><input type="text" id="address" name="address"></td>
 
-                <th><label for="phonenumber">Телефон:</label></th>
-                <td><input type="text" id="phonenumber" name="phonenumber"></td>
+                <th><label for="phone_number">Номер телефона:</label></th>
+                <td><input type="text" id="phone_number" name="phone_number"></td>
+            </tr>
 
-                <th><label for="polis">Полис:</label></th>
-                <td><input type="text" id="polis" name="polis"></td>
+            <tr>
+                <th><label for="insurance_data">Полис:</label></th>
+                <td><input type="text" id="insurance_data" name="insurance_data"></td>
+
+                <th><label for="date_of_birth">Д/Р:</label></th>
+                <td><input type="date" id="date_of_birth" name="date_of_birth"></td>
             </tr>
             <tr>
-                <th><label for="birthday">Д/Р:</label></th>
-                <td><input type="date" id="birthday" name="birthday"></td>
+                <th><label for="blood_type">Группа крови:</label></th>
+                <td><input type="text" id="blood_type" name="blood_type"></td>
 
-                <th><label for="bloodgroup">Группа крови:</label></th>
-                <td>
-                    <select id="bloodgroup" name="bloodgroup">
-                        <option value="">Все</option>
-                        <option value="A">A</option>
-                        <option value="B">B</option>
-                        <option value="AB">AB</option>
-                        <option value="O">O</option>
-                    </select>
-                </td>
-
-                <th><label for="rhfactor">Резус-фактор:</label></th>
-                <td>
-                    <select id="rhfactor" name="rhfactor">
-                        <option value="">Все</option>
-                        <option value="+">+</option>
-                        <option value="-">-</option>
-                    </select>
-                </td>
+                <th><label for="rh_factor">Ресус-фактор:</label></th>
+                <td><input type="text" id="rh_factor" name="rh_factor"></td>
             </tr>
+
             <tr>
                 <td colspan="6" style="text-align: right;">
-                    <button type="button" onclick="setFalseShouldGetDonorsState(); searchDonors()">Найти</button>
-                    <button type="reset" onclick="setTrueShouldGetDonorsState(); searchDonors()">Очистить</button>
+                    <button type="search" onclick="setFalseShouldGetDonorsState(); searchDonors()">Найти</button>
+                    <button type="reset" onclick="setTrueShouldGetDonorsState(); getDonors()">Очистить</button>
                 </td>
             </tr>
         </table>
@@ -132,7 +88,8 @@ function getShouldGetDonorsState() {
 </div>
 
 <div class="action-buttons">
-    <button onclick="addDonorModal()">Добавить донора</button>
+    <button onclick="addDonorModal()">Записать</button>
+    <button onclick="openModal()">Редактировать данные</button>
 </div>
 
 <!-- Модальное окно для добавления нового донора -->
@@ -142,181 +99,154 @@ function getShouldGetDonorsState() {
         <form id="addDonorForm">
             <table>
                 <tr>
-                    <th><label for="addDonorName">Имя:</label></th>
-                    <td><input type="text" id="addDonorName" name="name" required></td>
-                    <th><label for="addDonorSecondName">Фамилия:</label></th>
-                    <td><input type="text" id="addDonorSecondName" name="secondname" required></td>
-                    <th><label for="addDonorSurname">Отчество:</label></th>
-                    <td><input type="text" id="addDonorSurname" name="surname"></td>
+                    <th><label for="addDonorFirstName">Имя:</label></th>
+                    <td><input type="text" id="addDonorFirstName" name="addDonorFirstName" required></td>
+                    <th><label for="addDonorLastName">Фамилия:</label></th>
+                    <td><input type="text" id="addDonorLastName" name="addDonorLastName" required></td>
+                    <th><label for="addDonorMiddleName">Отчество:</label></th>
+                    <td><input type="text" id="addDonorMiddleName" name="addDonorMiddleName"></td>
                 </tr>
                 <tr>
-                    <th><label for="addDonorBirthday">Д/Р:</label></th>
-                    <td><input type="date" id="addDonorBirthday" name="birthday" required></td>
+                    <th><label for="addDonorDateOfBirth">Д/Р:</label></th>
+                    <td><input type="date" id="addDonorDateOfBirth" name="addDonorDateOfBirth" required></td>
                     <th><label for="addDonorGender">Пол:</label></th>
-                    <td>
-                        <select id="addDonorGender" name="gender" required>
-                            <option value="M">Мужской</option>
-                            <option value="F">Женский</option>
-                        </select>
-                    </td>
+                    <td><select id="addDonorGender" name="addDonorGender" required>
+                            <option value="M">M</option>
+                            <option value="F">F</option>
+                        </select></td>
                     <th><label for="addDonorAddress">Адрес:</label></th>
-                    <td><input type="text" id="addDonorAddress" name="address"></td>
+                    <td><input type="text" id="addDonorAddress" name="addDonorAddress"></td>
                 </tr>
                 <tr>
                     <th><label for="addDonorPhoneNumber">Телефон:</label></th>
-                    <td><input type="text" id="addDonorPhoneNumber" name="phonenumber"></td>
+                    <td><input type="text" id="addDonorPhoneNumber" name="addDonorPhoneNumber"></td>
+                    <th><label for="addDonorHospitalAffiliation">Прикрепление:</label></th>
+                    <td><input type="text" id="addDonorHospitalAffiliation" name="addDonorHospitalAffiliation"></td>
                     <th><label for="addDonorPassportData">Паспорт:</label></th>
-                    <td><input type="text" id="addDonorPassportData" name="passportdata" required></td>
-                    <th><label for="addDonorPolis">Полис:</label></th>
-                    <td><input type="text" id="addDonorPolis" name="polis"></td>
+                    <td><input type="text" id="addDonorPassportData" name="addDonorPassportData"></td>
                 </tr>
                 <tr>
-                    <th><label for="addDonorBloodGroup">Группа крови:</label></th>
-                    <td>
-                        <select id="addDonorBloodGroup" name="bloodgroup" required>
-                            <option value="A">A</option>
-                            <option value="B">B</option>
-                            <option value="AB">AB</option>
-                            <option value="O">O</option>
-                        </select>
-                    </td>
+                    <th><label for="addDonorInsuranceData">Страховка:</label></th>
+                    <td><input type="text" id="addDonorInsuranceData" name="addDonorInsuranceData"></td>
+                    <th><label for="addDonorBloodType">Группа крови:</label></th>
+                    <td><input type="text" id="addDonorBloodType" name="addDonorBloodType" required></td>
                     <th><label for="addDonorRhFactor">Резус-фактор:</label></th>
-                    <td>
-                        <select id="addDonorRhFactor" name="rhfactor" required>
-                            <option value="+">+</option>
-                            <option value="-">-</option>
-                        </select>
-                    </td>
+                    <td><input type="text" id="addDonorRhFactor" name="addDonorRhFactor" required></td>
                 </tr>
             </table>
             <div class="modal-add-action-buttons">
-                <button type="submit">Сохранить</button>
+                <button type="submit">Записать</button>
             </div>
         </form>
     </div>
 </div>
+<script src = "{{ url_for('static', filename='js/addModal.js') }}"></script>
 
 <!-- Модальное окно для редактирования данных донора -->
 <div id="editDonorModal" class="modal-edit">
     <div class="modal-edit-content">
         <span class="close" onclick="closeEditModal()">&times;</span>
         <form id="editDonorForm">
-            <input type="hidden" id="editDonorPassportData" name="passportdata">
-            <input type="hidden" id="editDonorInstitutionCode" name="institutioncode">
             <table>
                 <tr>
-                    <th><label for="editDonorName">Имя:</label></th>
-                    <td><input type="text" id="editDonorName" name="name" required></td>
-                    <th><label for="editDonorSecondName">Фамилия:</label></th>
-                    <td><input type="text" id="editDonorSecondName" name="secondname" required></td>
-                    <th><label for="editDonorSurname">Отчество:</label></th>
-                    <td><input type="text" id="editDonorSurname" name="surname"></td>
+                    <th><label for="editDonorFirstName">Имя:</label></th>
+                    <td><input type="text" id="editDonorFirstName" name="editDonorFirstName" required></td>
+                    <th><label for="editDonorLastName">Фамилия:</label></th>
+                    <td><input type="text" id="editDonorLastName" name="editDonorLastName" required></td>
+                    <th><label for="editDonorMiddleName">Отчество:</label></th>
+                    <td><input type="text" id="editDonorMiddleName" name="editDonorMiddleName"></td>
                 </tr>
                 <tr>
-                    <th><label for="editDonorBirthday">Д/Р:</label></th>
-                    <td><input type="date" id="editDonorBirthday" name="birthday" required></td>
+                    <th><label for="editDonorDateOfBirth">Д/Р:</label></th>
+                    <td><input type="date" id="editDonorDateOfBirth" name="editDonorDateOfBirth" required></td>
                     <th><label for="editDonorGender">Пол:</label></th>
-                    <td>
-                        <select id="editDonorGender" name="gender" required>
-                            <option value="M">Мужской</option>
-                            <option value="F">Женский</option>
-                        </select>
-                    </td>
+                    <td><select id="editDonorGender" name="editDonorGender" required>
+                            <option value="M">M</option>
+                            <option value="F">F</option>
+                        </select></td>
                     <th><label for="editDonorAddress">Адрес:</label></th>
-                    <td><input type="text" id="editDonorAddress" name="address"></td>
+                    <td><input type="text" id="editDonorAddress" name="editDonorAddress"></td>
                 </tr>
                 <tr>
                     <th><label for="editDonorPhoneNumber">Телефон:</label></th>
-                    <td><input type="text" id="editDonorPhoneNumber" name="phonenumber"></td>
-                    <th><label for="editDonorPolis">Полис:</label></th>
-                    <td><input type="text" id="editDonorPolis" name="polis"></td>
+                    <td><input type="text" id="editDonorPhoneNumber" name="editDonorPhoneNumber"></td>
+                    <th><label for="editDonorHospitalAffiliation">Прикрепление:</label></th>
+                    <td><input type="text" id="editDonorHospitalAffiliation" name="editDonorHospitalAffiliation"></td>
+                    <th><label for="editDonorPassportData">Паспорт:</label></th>
+                    <td><input type="text" id="editDonorPassportData" name="editDonorPassportData"></td>
                 </tr>
                 <tr>
-                    <th><label for="editDonorBloodGroup">Группа крови:</label></th>
-                    <td>
-                        <select id="editDonorBloodGroup" name="bloodgroup" required>
-                            <option value="A">A</option>
-                            <option value="B">B</option>
-                            <option value="AB">AB</option>
-                            <option value="O">O</option>
-                        </select>
-                    </td>
+                    <th><label for="editDonorInsuranceData">Страховка:</label></th>
+                    <td><input type="text" id="editDonorInsuranceData" name="editDonorInsuranceData"></td>
+                    <th><label for="editDonorBloodType">Группа крови:</label></th>
+                    <td><input type="text" id="editDonorBloodType" name="editDonorBloodType" required></td>
                     <th><label for="editDonorRhFactor">Резус-фактор:</label></th>
-                    <td>
-                        <select id="editDonorRhFactor" name="rhfactor" required>
-                            <option value="+">+</option>
-                            <option value="-">-</option>
-                        </select>
-                    </td>
+                    <td><input type="text" id="editDonorRhFactor" name="editDonorRhFactor" required></td>
                 </tr>
             </table>
             <div class="modal-edit-action-buttons">
-                <button type="submit">Сохранить изменения</button>
+                <button type="submit">Редактировать данные</button>
             </div>
         </form>
     </div>
 </div>
 
+<script src="{{ url_for('static', filename='js/editModal.js') }}"></script>
+
+<script src="{{ url_for('static', filename='js/donorList.js') }}"></script>
+
 <table class="donors-list">
     <thead>
     <tr>
-        <th>Паспорт</th>
+        <th>ID</th>
+        <th>Прикрепление</th>
         <th>ФИО</th>
-        <th>Дата рождения</th>
+        <th>Д/Р</th>
         <th>Адрес</th>
-        <th>Телефон</th>
+        <th>Номер телефона</th>
         <th>Полис</th>
         <th>Группа крови</th>
-        <th>Резус-фактор</th>
-        <th>Действия</th>
+        <th>Ресус-фактор</th>
+        <th></th>
     </tr>
     </thead>
     <tbody id="donors">
     </tbody>
 </table>
 
+<script src="{{ url_for('static', filename='js/getHistory.js') }}"></script>
+<script src="{{ url_for('static', filename='js/addHistory.js') }}"></script>
+
+<table class="donors-list-history">
+    <thead>
+    <tr>
+        <th colspan="7">История и записи</th>
+    </tr>
+    <tr>
+        <th>ID</th>
+        <th>Прикрепление</th>
+        <th>ФИО</th>
+        <th>Полис</th>
+        <th>Результаты</th>
+        <th>Возможность повторного взятия крови</th>
+        <th>Дата последнего изменения</th>
+    </tr>
+    </thead>
+    <tbody id="donors-history">
+    </tbody>
+</table>
+
+<div class="save-load-buttons">
+    <button onclick="saveDonors()">Сохранить</button>
+    <button onclick="loadCSV()">Загрузить</button>
+    <input type="file" id="file" onchange="uploadCSV()">
+</div>
+
 <div class="footer">
     <span>Разработка и поддержка - ООО "DONOR MIRROR"</span>
 </div>
 
-<script src="{{ url_for('static', filename='js/index_scripts.js') }}"></script>
-<script src="{{ url_for('static', filename='js/search.js') }}"></script>
-<script src="{{ url_for('static', filename='js/addModal.js') }}"></script>
-<script src="{{ url_for('static', filename='js/editModal.js') }}"></script>
-<script src="{{ url_for('static', filename='js/donorList.js') }}"></script>
-
-<script>
-    // Функция для загрузки всех доноров при первом открытии страницы
-    function getDonors() {
-        fetch('/donor/list/get?order=asc')
-            .then(response => response.json())
-            .then(data => {
-                const donorsTable = document.getElementById('donors');
-                donorsTable.innerHTML = '';
-
-                data.forEach(donor => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${donor.passportdata}</td>
-                        <td>${donor.surname} ${donor.name} ${donor.secondname}</td>
-                        <td>${donor.birthday}</td>
-                        <td>${donor.address}</td>
-                        <td>${donor.phonenumber}</td>
-                        <td>${donor.polis}</td>
-                        <td>${donor.bloodgroup}</td>
-                        <td>${donor.rhfactor}</td>
-                        <td>
-                            <button onclick="prepareEditModal('${donor.passportdata}', '${donor.institutioncode}')">Редактировать</button>
-                        </td>
-                    `;
-                    donorsTable.appendChild(row);
-                });
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-    }
-</script>
-
 </body>
+
 </html>
+

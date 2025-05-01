@@ -1,4 +1,3 @@
-// Функции для кнопки выхода
 function showLogoutButton() {
     document.querySelector(".exit-button").style.display = "block";
 }
@@ -11,44 +10,28 @@ function hideLogoutButton() {
     }, 500);
 }
 
-// Функция для загрузки данных текущего врача
-// Обновленный код для index_scripts.js
-function loadCurrentDoctor() {
-    fetch('/doctor/current')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Ошибка загрузки данных врача');
-            }
-            return response.json();
-        })
-        .then(data => {
-            // Устанавливаем имя врача
-            const doctorNameElement = document.getElementById('doctor-name');
-            if (data.surname && data.name) {
-                const initials = `${data.name.charAt(0)}.${data.secondname ? data.secondname.charAt(0) + '.' : ''}`;
-                doctorNameElement.textContent = `${data.surname} ${initials}`;
-            }
-
-            // Устанавливаем название учреждения
-            const hospitalNameElement = document.getElementById('hospital-name');
-            if (data.institutionname) {
-                hospitalNameElement.textContent = data.institutionname;
-                hospitalNameElement.dataset.institutionCode = data.institutioncode; // Сохраняем код учреждения
+function getMedicalHistory() {
+    fetch('/medical_history/get')
+        .then(response => response.json())
+        .then(medical_history => {
+            const medicalHistoryTable = document.getElementById('donors-history');
+            medicalHistoryTable.innerHTML = '';
+            for (const donor of medical_history) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${donor.donor_id}</td>
+                    <td>${donor.hospital_affiliation}</td>
+                    <td>${donor.first_name} ${donor.last_name}</td>
+                    <td>${donor.insurance_data}</td>
+                    <td>${donor.test_results}</td>
+                    <td>${donor.donation_ban ? 'Да' : 'Нет'}</td>
+                    <td>${donor.last_examination_date}</td>
+                `;
+                medicalHistoryTable.appendChild(row);
             }
         })
-        .catch(error => {
-            console.error('Ошибка:', error);
-            document.getElementById('doctor-name').textContent = 'Неизвестный пользователь';
-            document.getElementById('hospital-name').textContent = 'Медицинское учреждение';
-        });
+        .catch(error => console.error(error));
 }
 
-// Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', function() {
-    loadCurrentDoctor();
-
-    // Проверяем, нужно ли загружать список доноров сразу
-    if (localStorage.getItem('shouldGetDonors') !== 'false') {
-        getDonors();
-    }
-});
+document.addEventListener('DOMContentLoaded', getMedicalHistory);
+document.addEventListener('reload', getMedicalHistory);

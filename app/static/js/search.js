@@ -1,98 +1,52 @@
-// Функция для поиска доноров (с пустыми параметрами по умолчанию)
-async function searchDonors(params = {}) {
-    const searchParams = new URLSearchParams();
-
-    // Добавляем параметры поиска, если они переданы
-    Object.keys(params).forEach(key => {
-        if (params[key]) {
-            searchParams.append(key, params[key]);
-        }
-    });
-
-    try {
-        const response = await fetch('/donor/list/search?' + searchParams.toString());
-        if (!response.ok) {
-            throw new Error('Ошибка сети');
-        }
-        const donors = await response.json();
-
-        const donorsTable = document.getElementById('donors');
-        donorsTable.innerHTML = '';
-
-        if (donors.length === 0) {
-            const row = document.createElement('tr');
-            row.innerHTML = `<td colspan="9" style="text-align: center;">Ничего не найдено</td>`;
-            donorsTable.appendChild(row);
-            return;
-        }
-
-        donors.forEach(donor => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${donor.passportdata}</td>
-                <td>${donor.surname} ${donor.name} ${donor.secondname || ''}</td>
-                <td>${donor.birthday}</td>
-                <td>${donor.address}</td>
-                <td>${donor.phonenumber}</td>
-                <td>${donor.polis}</td>
-                <td>${donor.bloodgroup}</td>
-                <td>${donor.rhfactor}</td>
-                <td>
-                    <button onclick="prepareEditModal('${donor.passportdata}', '${donor.institutioncode}')">Редактировать</button>
-                </td>
-            `;
-
-            row.addEventListener('click', (e) => {
-                if (e.target.tagName !== 'BUTTON') {
-                    document.querySelectorAll('#donors tr').forEach(r => r.classList.remove('selected'));
-                    row.classList.add('selected');
-                }
-            });
-
-            donorsTable.appendChild(row);
-        });
-
-    } catch (error) {
-        console.error('Ошибка при поиске доноров:', error);
-        const donorsTable = document.getElementById('donors');
-        donorsTable.innerHTML = `
-            <tr>
-                <td colspan="9" style="text-align: center; color: red;">
-                    Ошибка при загрузке данных. Пожалуйста, попробуйте позже.
-                </td>
-            </tr>
-        `;
-    }
-}
-
-// Функция для обработки формы поиска
-function handleSearchForm() {
-    const form = document.getElementById('search-form');
-    const formData = new FormData(form);
-    const params = {
-        surname: formData.get('surname'),
-        name: formData.get('name'),
-        secondname: formData.get('secondname'),
-        address: formData.get('address'),
-        phonenumber: formData.get('phonenumber'),
-        polis: formData.get('polis'),
-        birthday: formData.get('birthday'),
-        bloodgroup: formData.get('bloodgroup'),
-        rhfactor: formData.get('rhfactor')
-    };
-
-    searchDonors(params);
-}
-
-// Инициализация формы поиска
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('search-form');
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        setFalseShouldGetDonorsState();
-        handleSearchForm();
-    });
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const formData = new FormData(form);
+        const searchParams = new URLSearchParams(formData);
+        const queryString = searchParams.toString();
+        try {
+            const response = await fetch('/donor/list/search?' + queryString);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const donors = await response.json();
 
-    // Загружаем всех доноров при первой загрузке страницы
-    searchDonors();
+            const donorsTable = document.getElementById('donors');
+            donorsTable.innerHTML = '';
+
+            if (donors.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>Ничего не найдено</td>`;
+                donorsTable.appendChild(row);
+            }
+
+            for (const donor of donors) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${donor.id}</td>
+                    <td>${donor.hospital_affiliation}</td>
+                    <td>${donor.first_name} ${donor.last_name}${donor.middle_name ? ` ${donor.middle_name}` : ''}</td>
+                    <td>${donor.date_of_birth}</td>
+                    <td>${donor.address}</td>
+                    <td>${donor.phone_number}</td>
+                    <td>${donor.insurance_data}</td>
+                    <td>${donor.blood_type}</td>
+                    <td>${donor.rh_factor}</td>
+                `;
+
+                row.addEventListener('click', () => {
+                    const selectedRow = document.querySelector('.selected');
+                    if (selectedRow) {
+                        selectedRow.classList.remove('selected');
+                    }
+                    row.classList.add('selected');
+                });
+
+                donorsTable.appendChild(row);
+            }
+        } catch (error) {
+            console.error('Error searching donors:', error);
+        }
+    });
 });
