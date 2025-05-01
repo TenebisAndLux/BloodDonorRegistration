@@ -2,34 +2,34 @@ from ..extensions import db
 
 
 class Donor(db.Model):
-    __tablename__ = 'donors'
-    id = db.Column(db.Integer, primary_key=True)
-    first_name = db.Column(db.String(50), nullable=False)
-    last_name = db.Column(db.String(50), nullable=False)
-    middle_name = db.Column(db.String(50))
-    date_of_birth = db.Column(db.Date, nullable=False)
+    __tablename__ = 'donor'
+    passportdata = db.Column(db.Integer, primary_key=True)
+    institutioncode = db.Column(db.Integer, db.ForeignKey('medicalinstitution.institutioncode'), primary_key=True)
+    historynumber = db.Column(db.Integer, db.ForeignKey('medicalhistory.historynumber'))
+    name = db.Column(db.String(100), nullable=False)
+    secondname = db.Column(db.String(100), nullable=False)
+    surname = db.Column(db.String(100), nullable=False)
+    birthday = db.Column(db.Date, nullable=False)
     gender = db.Column(db.String(10), nullable=False)
-    address = db.Column(db.String(255))
-    phone_number = db.Column(db.String(20))
-    hospital_affiliation = db.Column(db.String(255))
-    passport_data = db.Column(db.String(50))
-    insurance_data = db.Column(db.String(50))
-    blood_type = db.Column(db.String(5), nullable=False)
-    rh_factor = db.Column(db.String(5), nullable=False)
+    address = db.Column(db.String(255), nullable=False)
+    phonenumber = db.Column(db.String(15), nullable=False)
+    polis = db.Column(db.String(20), nullable=False)
+    bloodgroup = db.Column(db.String(3), nullable=False)
+    rhfactor = db.Column(db.String(1), nullable=False)
 
     def to_dict(self):
         return {
-            'id': self.id,
-            'first_name': self.first_name,
-            'last_name': self.last_name,
-            'middle_name': self.middle_name,
-            'date_of_birth': self.date_of_birth,
+            'passportdata': self.passportdata,
+            'institutioncode': self.institutioncode,
+            'historynumber': self.historynumber,
+            'name': self.name,
+            'secondname': self.secondname,
+            'surname': self.surname,
+            'birthday': self.birthday.isoformat() if self.birthday else None,
             'gender': self.gender,
             'address': self.address,
-            'phone_number': self.phone_number,
-            'hospital_affiliation': self.hospital_affiliation,
-            'passport_data': self.passport_data,
-            'insurance_data': self.insurance_data,
-            'blood_type': self.blood_type,
-            'rh_factor': self.rh_factor,
+            'phonenumber': self.phonenumber,
+            'polis': self.polis,
+            'bloodgroup': self.bloodgroup,
+            'rhfactor': self.rhfactor,
         }

@@ -1,33 +1,36 @@
-from flask import Blueprint, render_template, flash, redirect, url_for, request, jsonify
+from flask import Blueprint, jsonify, request
 from ..extensions import db
 from ..models.donor import Donor
 
 donor_list = Blueprint('donor_list', __name__)
 
-
-@donor_list.route('/donor/list/get', methods=['GET'])
-def get():
+@donor_list.route('/donor_list/get', methods=['GET'])
+def get_donors():
     try:
         order = request.args.get('order', 'asc')
-        donors = Donor.query.order_by(Donor.id.asc() if order == 'asc' else Donor.id.desc()).all()
-        donors_list = []
+        # Сортировка по паспорту и institutioncode
+        donors = Donor.query.order_by(
+            Donor.passportdata.asc() if order == 'asc' else Donor.passportdata.desc()
+        ).all()
+
+        donorsList = []
         for donor in donors:
-            donor_dict = {
-                'id': donor.id,
-                'first_name': donor.first_name,
-                'last_name': donor.last_name,
-                'middle_name': donor.middle_name,
-                'date_of_birth': donor.date_of_birth.strftime('%Y-%m-%d'),
+            donorDict = {
+                'passportdata': donor.passportdata,
+                'institutioncode': donor.institutioncode,
+                'historynumber': donor.historynumber,
+                'name': donor.name,
+                'secondname': donor.secondname,
+                'surname': donor.surname,
+                'birthday': donor.birthday.strftime('%Y-%m-%d') if donor.birthday else None,
                 'gender': donor.gender,
                 'address': donor.address,
-                'phone_number': donor.phone_number,
-                'hospital_affiliation': donor.hospital_affiliation,
-                'passport_data': donor.passport_data,
-                'insurance_data': donor.insurance_data,
-                'blood_type': donor.blood_type,
-                'rh_factor': donor.rh_factor
+                'phonenumber': donor.phonenumber,
+                'polis': donor.polis,
+                'bloodgroup': donor.bloodgroup,
+                'rhfactor': donor.rhfactor,
             }
-            donors_list.append(donor_dict)
-        return jsonify(donors_list)
+            donorsList.append(donorDict)
+        return jsonify(donorsList)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
