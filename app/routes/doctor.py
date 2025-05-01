@@ -29,7 +29,33 @@ def search_doctor():
         print(f"Database error: {str(e)}")
         return jsonify({'message': error_message}), 500
 
-#чек
+
+@doctor.route('/doctor/current', methods=['GET'])  # Добавьте /doctor перед /current
+def get_current_doctor():
+    # Здесь должна быть логика получения текущего авторизованного врача
+    # Например, из сессии или токена
+
+    # Временная реализация для теста - возвращает первого врача
+    try:
+        current_doctor = Doctor.query.first()
+
+        if not current_doctor:
+            return jsonify({'error': 'No doctors found'}), 404
+
+        # Проверяем наличие связи с учреждением
+        institution_name = current_doctor.institution.nameofinstitution if current_doctor.institution else "Неизвестное учреждение"
+
+        return jsonify({
+            'name': current_doctor.name,
+            'secondname': current_doctor.secondname,
+            'surname': current_doctor.surname,
+            'institutionname': institution_name,
+            'institutioncode': current_doctor.institutioncode
+        })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @doctor.route('/doctor/forgot/search', methods=['POST'])
 def forgot_search_doctor():
     login = request.json.get('login')
