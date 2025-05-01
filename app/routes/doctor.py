@@ -29,7 +29,7 @@ def search_doctor():
         print(f"Database error: {str(e)}")
         return jsonify({'message': error_message}), 500
 
-
+#чек
 @doctor.route('/doctor/forgot/search', methods=['POST'])
 def forgot_search_doctor():
     login = request.json.get('login')
