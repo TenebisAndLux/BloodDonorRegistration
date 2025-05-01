@@ -11,7 +11,7 @@ class Doctor(db.Model):
     login = db.Column(db.String(50), nullable=False)
     password = db.Column(db.String(255), nullable=False)
     email = db.Column(db.String(255), nullable=False)
-
+    institution = db.relationship('MedicalInstitution', backref='doctors')
     def to_dict(self):
         return {
             'institutioncode': self.institutioncode,
