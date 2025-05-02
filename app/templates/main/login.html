@@ -1,8 +1,6 @@
 {% extends 'main/base.html' %}
 
-{% block title %}
-Вход в систему
-{% endblock %}
+{% block title %}Вход в систему{% endblock %}
 
 {% block header %}
 <header>
@@ -17,31 +15,49 @@
 {% block content %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    var loginButton = document.getElementById('login-button');
-    if (loginButton) {
-        loginButton.addEventListener('click', function(event) {
-            event.preventDefault();
+    const loginForm = document.getElementById('login-form');
+    let csrfToken = '{{ csrf_token }}';
 
-            var login = document.getElementById('username').value;
-            var password = document.getElementById('password').value;
+    if (loginForm) {
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
 
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', '/doctor/search'); // Изменено на '/doctor/search'
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.onload = function() {
-                if (xhr.status === 200) {
-                    var doctor = JSON.parse(xhr.responseText);
+            const login = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const button = document.getElementById('login-button');
+
+            button.disabled = true;
+            button.textContent = 'Вход...';
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({
+                        login: login,
+                        password: password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    csrfToken = data.csrf_token;  // Обновляем токен
                     window.location.href = '/donor/list';
-                } else if (xhr.status === 404) {
-                    alert('Doctor not found.');
                 } else {
-                    alert('An error occurred.');
+                    alert(data.error || 'Ошибка входа');
                 }
-            };
-            xhr.send(JSON.stringify({
-                'login': login,
-                'password': password
-            }));
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('Ошибка соединения');
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Войти';
+            }
         });
     }
 });
@@ -49,16 +65,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <div class="login-container">
     <div class="login">
-        <form action="/login" method="post" id="login-form">
+        <form id="login-form">
             <label for="username">Логин:</label>
-            <input type="text" id="username" name="username" placeholder="Введите ваш логин" required autofocus>
+            <input type="text" id="username" name="username" required autofocus>
 
             <label for="password">Пароль:</label>
-            <input type="password" id="password" name="password" placeholder="Введите ваш пароль" required>
+            <input type="password" id="password" name="password" required>
 
             <button type="submit" id="login-button">Войти</button>
 
-            <a href="/login/forgot" id="forgot-password-link">Забыли пароль?</a>
+            <a href="/login/forgot">Забыли пароль?</a>
             <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         </form>
     </div>

@@ -1,10 +1,13 @@
 from flask import Blueprint, jsonify, request
+from flask_login import login_required
+
 from ..extensions import db
 from ..models.donor import Donor
 
 donor_list = Blueprint('donor_list', __name__)
 
 @donor_list.route('/donor_list/get', methods=['GET'])
+@login_required
 def get_donors():
     try:
         order = request.args.get('order', 'asc')
