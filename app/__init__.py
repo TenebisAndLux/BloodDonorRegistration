@@ -16,7 +16,7 @@ from .models import Doctor
 from .routes.main import main
 from .routes.auth import auth
 from .routes.forgot_login import forgot_login
-from .routes.add_donor import donor
+from .routes.donor import donor
 from .routes.donor_list import donor_list
 from .routes.doctor_info import doctor_info
 from .routes.blood_bank import blood_bank

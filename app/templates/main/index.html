@@ -10,7 +10,15 @@
 </head>
 <body>
 <div class="header">
-    <div class="hospital-name" id="hospital-name">Загрузка...</div>
+    <div class="left-group">
+        <div class="hospital-name" id="hospital-name">Загрузка...</div>
+        <div class="navigation">
+            <button onclick="location.href='/donor/list'">✎ Доноры</button>
+            <button onclick="location.href='/donor/reports'">📜 Отчеты</button>
+            <button onclick="location.href='/blood_bank'">🗑 Банк крови</button>
+        </div>
+    </div>
+
     <div class="name-container" onmouseenter="showLogoutButton()" onmouseleave="hideLogoutButton()">
         <div class="name" onfocus="showLogoutButton()" id="doctor-name">
             Загрузка...
@@ -73,6 +81,8 @@
         return localStorage.getItem('shouldGetDonors') === 'true';
     }
 </script>
+
+<main class="content-wrapper">
 
 <div class="search-container">
     <form id="search-form">
@@ -150,6 +160,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <div class="action-buttons">
     <button onclick="addDonorModal()">Добавить донора</button>
+    <button onclick="addBloodCollectionModal()">Добавить забор крови</button>
 </div>
 
 <div id="addDonorModal" class="modal-add">
@@ -287,12 +298,64 @@ document.addEventListener('DOMContentLoaded', function() {
         <th>Полис</th>
         <th>Группа крови</th>
         <th>Резус-фактор</th>
-        <th>Действия</th>
+        <th >Действия</th>
     </tr>
     </thead>
     <tbody id="donors">
     </tbody>
 </table>
+
+<div id="historyModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeHistoryModal()">&times;</span>
+        <h3>История донора</h3>
+        <div id="historyContent"></div>
+        <button onclick="saveHistory()">Сохранить</button>
+    </div>
+</div>
+
+<div id="bloodCollectionModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeBloodCollectionModal()">&times;</span>
+        <h3>Добавить забор крови</h3>
+        <form id="bloodCollectionForm">
+            <div class="form-group">
+                <label for="donorSearch">Поиск донора:</label>
+                <input type="text" id="donorSearch" placeholder="Введите ФИО или паспорт">
+                <div id="donorSearchResults"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="collectionType">Тип забора:</label>
+                <select id="collectionType" required>
+                    <option value="">Выберите тип</option>
+                    <option value="1">Цельная кровь</option>
+                    <option value="2">Плазма</option>
+                    <option value="3">Тромбоциты</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="collectionVolume">Объем (мл):</label>
+                <input type="number" id="collectionVolume" required>
+            </div>
+
+            <div class="form-group">
+                <label for="collectionDate">Дата забора:</label>
+                <input type="date" id="collectionDate" required>
+            </div>
+
+            <div class="form-group">
+                <label for="examinationResults">Результаты обследования:</label>
+                <textarea id="examinationResults" rows="4"></textarea>
+            </div>
+
+            <button type="submit">Сохранить</button>
+        </form>
+    </div>
+</div>
+
+</main>
 
 <div class="footer">
     <span>Разработка и поддержка - ООО "DONOR MIRROR"</span>
@@ -303,6 +366,8 @@ document.addEventListener('DOMContentLoaded', function() {
 <script src="{{ url_for('static', filename='js/addModal.js') }}"></script>
 <script src="{{ url_for('static', filename='js/editModal.js') }}"></script>
 <script src="{{ url_for('static', filename='js/donorList.js') }}"></script>
+<script src="{{ url_for('static', filename='js/bloodCollection.js') }}"></script>
+<script src="{{ url_for('static', filename='js/historyModal.js') }}"></script>
 
 </body>
 </html>

@@ -37,8 +37,9 @@ function searchDonors() {
                         <td>${donor.polis}</td>
                         <td>${donor.bloodgroup}</td>
                         <td>${donor.rhfactor}</td>
-                        <td>
-                            <button onclick="prepareEditModal('${donor.passportdata}', '${donor.institutioncode}')">Редактировать</button>
+                        <td style="display:flex;gap:10px;align-items:center;">
+                            <button onclick="prepareEditModal('${donor.passportdata}', '${donor.institutioncode}')">Изменить</button>
+                            <button onclick="openHistoryModal('${donor.passportdata}', '${donor.institutioncode}')">История</button>
                         </td>
                     `;
                     row.addEventListener('click', (e) => {
@@ -88,8 +89,9 @@ function getDonors() {
                         <td>${donor.polis}</td>
                         <td>${donor.bloodgroup}</td>
                         <td>${donor.rhfactor}</td>
-                        <td>
-                            <button onclick="prepareEditModal('${donor.passportdata}', '${donor.institutioncode}')">Редактировать</button>
+                        <td style="display:flex;gap:10px;align-items:center;">
+                            <button onclick="prepareEditModal('${donor.passportdata}', '${donor.institutioncode}')">Изменить</button>
+                            <button onclick="openHistoryModal('${donor.passportdata}', '${donor.institutioncode}')">История</button>
                         </td>
                     `;
                     row.addEventListener('click', (e) => {
@@ -133,3 +135,25 @@ function getSelectedDonor() {
 document.addEventListener('DOMContentLoaded', () => {
     if (getShouldGetDonorsState()) getDonors();
 });
+
+function renderDonorRow(donor) {
+    return `
+        <tr>
+            <td>${donor.institutionName}</td>
+            <td>${donor.passportData}</td>
+            <td>${donor.secondName} ${donor.name} ${donor.surName || ''}</td>
+            <td>${donor.gender === 'M' ? 'М' : 'Ж'}</td>
+            <td>${donor.birthday}</td>
+            <td>${donor.address || ''}</td>
+            <td>${donor.phoneNumber || ''}</td>
+            <td>${donor.polis || ''}</td>
+            <td>${donor.bloodGroup}</td>
+            <td>${donor.rhFactor}</td>
+            <td class="actions">
+                <button onclick="editDonorModal('${donor.passportData}', ${donor.institutionCode})">✏️</button>
+                <button onclick="deleteDonor('${donor.passportData}', ${donor.institutionCode})">🗑️</button>
+                <button onclick="openHistoryModal('${donor.passportData}', ${donor.institutionCode})">📜 История</button>
+            </td>
+        </tr>
+    `;
+}

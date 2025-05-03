@@ -1,9 +1,15 @@
 from datetime import datetime
 from flask import Blueprint, request, jsonify
+from flask_login import current_user
 from werkzeug.exceptions import NotFound
+
+from .. import Doctor
 from ..extensions import db
 from ..models import MedicalInstitution
+from ..models.blood_collection import BloodCollection
+from ..models.blood_collection_type import BloodCollectionType
 from ..models.donor import Donor
+from ..models.medical_examination import MedicalExamination
 
 donor = Blueprint('donor', __name__)
 
@@ -72,6 +78,98 @@ def search_id(passportdata, institutioncode):
     except Exception as e:
         return jsonify({'message': 'An error occurred.', 'error': str(e)}), 500
 
+
+@donor.route('/donor/history')
+def donor_history():
+    passport = request.args.get('passport')
+    institution = request.args.get('institution')
+
+    history = db.session.query(
+        BloodCollection.CollectionDate,
+        BloodCollectionType.Name,
+        BloodCollection.BloodVolume,
+        Doctor.Name,
+        Doctor.SecondName,
+        MedicalExamination.SurveyResults
+    ).join(
+        BloodCollectionType,
+        BloodCollection.CollectionTypeCode == BloodCollectionType.Code
+    ).join(
+        Doctor,
+        (BloodCollection.ServiceNumber == Doctor.ServiceNumber) &
+        (BloodCollection.InstitutionCode == Doctor.InstitutionCode)
+    ).join(
+        MedicalExamination,
+        (BloodCollection.PassportData == MedicalExamination.PassportData) &
+        (BloodCollection.InstitutionCode == MedicalExamination.InstitutionCode)
+    ).filter(
+        BloodCollection.PassportData == passport,
+        BloodCollection.InstitutionCode == institution
+    ).all()
+
+    return jsonify({
+        'history': [{
+            'date': item[0].strftime('%Y-%m-%d'),
+            'type': item[1],
+            'volume': item[2],
+            'doctor': f"{item[4]} {item[3]}",
+            'notes': item[5]
+        } for item in history]
+    })
+
+
+@donor.route('/donor/search')
+def donor_search():
+    query = request.args.get('q')
+
+    donors = Donor.query.filter(
+        (Donor.Name.ilike(f'%{query}%')) |
+        (Donor.SecondName.ilike(f'%{query}%')) |
+        (Donor.PassportData.ilike(f'%{query}%'))
+    ).limit(10).all()
+
+    return jsonify({
+        'donors': [{
+            'passportData': donor.PassportData,
+            'institutionCode': donor.InstitutionCode,
+            'name': donor.Name,
+            'secondName': donor.SecondName
+        } for donor in donors]
+    })
+
+
+@donor.route('/blood_collection/create', methods=['POST'])
+def create_blood_collection():
+    data = request.json
+
+    try:
+        # Создаем запись о заборе крови
+        new_collection = BloodCollection(
+            BloodSupplyCollectionTypeCode=data['type'],
+            BloodBankInstitutionCode=data['institutionCode'],
+            PassportData=data['donorPassport'],
+            InstitutionCode=data['institutionCode'],
+            CollectionDate=data['date'],
+            BloodVolume=data['volume'],
+            ServiceNumber=current_user.ServiceNumber
+        )
+        db.session.add(new_collection)
+
+        # Создаем запись обследования
+        new_exam = MedicalExamination(
+            PassportData=data['donorPassport'],
+            InstitutionCode=data['institutionCode'],
+            SurveyResults=data['notes'],
+            DateOfExamination=data['date'],
+            ServiceNumber=current_user.ServiceNumber
+        )
+        db.session.add(new_exam)
+
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
 
 @donor.route('/donor/list/search', methods=['GET'])
 def search_donors():
