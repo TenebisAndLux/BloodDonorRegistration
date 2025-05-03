@@ -39,7 +39,6 @@
             e.preventDefault();
 
             const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-            console.log("CSRF Token:", csrfToken);
 
             if (!csrfToken) {
                 alert("CSRF token not found!");

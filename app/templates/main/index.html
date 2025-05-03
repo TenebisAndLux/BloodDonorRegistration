@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Система учета доноров крови</title>
@@ -20,58 +21,57 @@
     </div>
 </div>
 
+<div id="loading" style="display: none; text-align: center; padding: 10px;">Загрузка...</div>
+
 <script>
-    // Загружаем данные врача и учреждения при загрузке страницы
     document.addEventListener('DOMContentLoaded', function() {
-    // Функция для скрытия индикатора загрузки
-    function hideLoading() {
         const loadingElement = document.getElementById('loading');
-        if (loadingElement) {
+
+        function showLoading() {
+            loadingElement.style.display = 'block';
+        }
+
+        function hideLoading() {
             loadingElement.style.display = 'none';
         }
+
+        fetch('/doctor/current')
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('doctor-name').textContent = 'Врач не найден';
+                    document.getElementById('hospital-name').textContent = 'Учреждение не найдено';
+                } else {
+                    document.getElementById('doctor-name').textContent = `${data.secondname} ${data.name.charAt(0)}.`;
+                    document.getElementById('hospital-name').textContent = data.institutionname;
+                    document.getElementById('hospital-name').dataset.institutionCode = data.institutioncode;
+                }
+                searchDonors();
+                hideLoading();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('doctor-name').textContent = 'Ошибка загрузки';
+                document.getElementById('hospital-name').textContent = 'Ошибка загрузки';
+                searchDonors();
+                hideLoading();
+            });
+    });
+
+    function setTrueShouldGetDonorsState() {
+        localStorage.setItem('shouldGetDonors', 'true');
     }
 
-    // Загружаем данные врача
-    fetch('/doctor/current')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.error) {
-                console.error('Server error:', data.error);
-                document.getElementById('doctor-name').textContent = 'Врач не найден';
-                document.getElementById('hospital-name').textContent = 'Учреждение не найдено';
-            } else {
-                document.getElementById('doctor-name').textContent = data.secondname + ' ' + data.name.charAt(0) + '.';
-                document.getElementById('hospital-name').textContent = data.institutionname;
-            }
-            searchDonors(); // Вызываем поиск доноров
-            hideLoading(); // Скрываем индикатор загрузки
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            document.getElementById('doctor-name').textContent = 'Ошибка загрузки';
-            document.getElementById('hospital-name').textContent = 'Ошибка загрузки';
-            searchDonors(); // Вызываем поиск доноров даже при ошибке
-            hideLoading(); // Скрываем индикатор загрузки
-        });
-});
+    function setFalseShouldGetDonorsState() {
+        localStorage.setItem('shouldGetDonors', 'false');
+    }
 
-// Функции для работы с состоянием shouldGetDonors
-function setTrueShouldGetDonorsState() {
-    localStorage.setItem('shouldGetDonors', 'true');
-}
-
-function setFalseShouldGetDonorsState() {
-    localStorage.setItem('shouldGetDonors', 'false');
-}
-
-function getShouldGetDonorsState() {
-    return localStorage.getItem('shouldGetDonors') === 'true';
-}
+    function getShouldGetDonorsState() {
+        return localStorage.getItem('shouldGetDonors') === 'true';
+    }
 </script>
 
 <div class="search-container">
@@ -80,27 +80,34 @@ function getShouldGetDonorsState() {
             <tr>
                 <th><label for="surname">Фамилия:</label></th>
                 <td><input type="text" id="surname" name="surname"></td>
-
                 <th><label for="name">Имя:</label></th>
                 <td><input type="text" id="name" name="name"></td>
-
                 <th><label for="secondname">Отчество:</label></th>
                 <td><input type="text" id="secondname" name="secondname"></td>
             </tr>
             <tr>
+                <th><label for="passportdata">Паспорт:</label></th>
+                <td><input type="text" id="passportdata" name="passportdata"></td>
                 <th><label for="address">Адрес:</label></th>
                 <td><input type="text" id="address" name="address"></td>
-
                 <th><label for="phonenumber">Телефон:</label></th>
                 <td><input type="text" id="phonenumber" name="phonenumber"></td>
-
-                <th><label for="polis">Полис:</label></th>
-                <td><input type="text" id="polis" name="polis"></td>
             </tr>
             <tr>
+                <th><label for="polis">Полис:</label></th>
+                <td><input type="text" id="polis" name="polis"></td>
                 <th><label for="birthday">Д/Р:</label></th>
                 <td><input type="date" id="birthday" name="birthday"></td>
-
+                <th><label for="gender">Пол:</label></th>
+                <td>
+                    <select id="gender" name="gender">
+                        <option value="">Все</option>
+                        <option value="M">Мужской</option>
+                        <option value="F">Женский</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
                 <th><label for="bloodgroup">Группа крови:</label></th>
                 <td>
                     <select id="bloodgroup" name="bloodgroup">
@@ -111,7 +118,6 @@ function getShouldGetDonorsState() {
                         <option value="O">O</option>
                     </select>
                 </td>
-
                 <th><label for="rhfactor">Резус-фактор:</label></th>
                 <td>
                     <select id="rhfactor" name="rhfactor">
@@ -124,21 +130,31 @@ function getShouldGetDonorsState() {
             <tr>
                 <td colspan="6" style="text-align: right;">
                     <button type="button" onclick="setFalseShouldGetDonorsState(); searchDonors()">Найти</button>
-                    <button type="reset" onclick="setTrueShouldGetDonorsState(); searchDonors()">Очистить</button>
+                    <button type="reset">Очистить</button>
                 </td>
             </tr>
         </table>
     </form>
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchForm = document.getElementById('search-form');
+
+    searchForm.addEventListener('reset', function() {
+        setTrueShouldGetDonorsState();
+        setTimeout(() => searchDonors(), 0);
+    });
+});
+</script>
+
 <div class="action-buttons">
     <button onclick="addDonorModal()">Добавить донора</button>
 </div>
 
-<!-- Модальное окно для добавления нового донора -->
 <div id="addDonorModal" class="modal-add">
     <div class="modal-add-content">
-        <span class="close" onclick="closeAddModal()">&times;</span>
+        <span class="close" onclick="closeAddModal()">×</span>
         <form id="addDonorForm">
             <table>
                 <tr>
@@ -196,10 +212,9 @@ function getShouldGetDonorsState() {
     </div>
 </div>
 
-<!-- Модальное окно для редактирования данных донора -->
 <div id="editDonorModal" class="modal-edit">
     <div class="modal-edit-content">
-        <span class="close" onclick="closeEditModal()">&times;</span>
+        <span class="close" onclick="closeEditModal()">×</span>
         <form id="editDonorForm">
             <input type="hidden" id="editDonorPassportData" name="passportdata">
             <input type="hidden" id="editDonorInstitutionCode" name="institutioncode">
@@ -230,6 +245,8 @@ function getShouldGetDonorsState() {
                     <td><input type="text" id="editDonorPhoneNumber" name="phonenumber"></td>
                     <th><label for="editDonorPolis">Полис:</label></th>
                     <td><input type="text" id="editDonorPolis" name="polis"></td>
+                    <th><label for="editDonorPassport">Паспорт:</label></th>
+                    <td><input type="text" id="editDonorPassportDisplay" readonly></td>
                 </tr>
                 <tr>
                     <th><label for="editDonorBloodGroup">Группа крови:</label></th>
@@ -262,6 +279,7 @@ function getShouldGetDonorsState() {
     <tr>
         <th>Паспорт</th>
         <th>ФИО</th>
+        <th>Пол</th>
         <th>Дата рождения</th>
         <th>Адрес</th>
         <th>Телефон</th>
@@ -284,39 +302,6 @@ function getShouldGetDonorsState() {
 <script src="{{ url_for('static', filename='js/addModal.js') }}"></script>
 <script src="{{ url_for('static', filename='js/editModal.js') }}"></script>
 <script src="{{ url_for('static', filename='js/donorList.js') }}"></script>
-
-<script>
-    // Функция для загрузки всех доноров при первом открытии страницы
-    function getDonors() {
-        fetch('/donor/list/get?order=asc')
-            .then(response => response.json())
-            .then(data => {
-                const donorsTable = document.getElementById('donors');
-                donorsTable.innerHTML = '';
-
-                data.forEach(donor => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${donor.passportdata}</td>
-                        <td>${donor.surname} ${donor.name} ${donor.secondname}</td>
-                        <td>${donor.birthday}</td>
-                        <td>${donor.address}</td>
-                        <td>${donor.phonenumber}</td>
-                        <td>${donor.polis}</td>
-                        <td>${donor.bloodgroup}</td>
-                        <td>${donor.rhfactor}</td>
-                        <td>
-                            <button onclick="prepareEditModal('${donor.passportdata}', '${donor.institutioncode}')">Редактировать</button>
-                        </td>
-                    `;
-                    donorsTable.appendChild(row);
-                });
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-    }
-</script>
 
 </body>
 </html>
