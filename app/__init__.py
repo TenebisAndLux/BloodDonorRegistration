@@ -1,12 +1,16 @@
 from flask import Flask, request
 from flask_cors import CORS
 from flask_wtf import CSRFProtect
-from werkzeug.security import generate_password_hash, check_password_hash
-
-from .extensions import db
-from .extensions import migrate
-from .config import Config
 from flask_login import LoginManager
+from flask_wtf.csrf import generate_csrf
+
+from app.services.email_service import init_mail
+
+from .config import Config
+
+from .extensions import (db)
+from .extensions import migrate
+
 
 from .models import Doctor
 from .routes.main import main
@@ -19,7 +23,6 @@ from .routes.blood_bank import blood_bank
 from .routes.hospital_info import hospital_info
 from .routes.report_system import report_system
 from .routes.information_system import information_system
-
 from .routes.doctor import doctor
 from .routes.medical_history import medical_history
 from .routes.blood_collections import blood_collection
@@ -28,12 +31,12 @@ from .routes.blood_collections import blood_collection
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
-    CSRFProtect(app)
 
+    CSRFProtect(app)
     login_manager = LoginManager()
     login_manager.init_app(app)
     login_manager.session_protection = "strong"
-    login_manager.login_view = 'auth.login'  # Добавьте это
+    login_manager.login_view = 'auth.login'
 
     CORS(app, supports_credentials=True, expose_headers=['Set-Cookie'])
     @app.after_request
@@ -41,6 +44,10 @@ def create_app(config_class=Config):
         response.headers['Access-Control-Allow-Origin'] = request.headers.get('Origin', '*')
         response.headers['Access-Control-Allow-Credentials'] = 'true'
         return response
+
+    @app.context_processor
+    def inject_csrf_token():
+        return dict(csrf_token=generate_csrf)
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -69,6 +76,7 @@ def create_app(config_class=Config):
     app.register_blueprint(report_system)
 
     db.init_app(app)
+    init_mail(app)
 
     migrate.init_app(app, db)
 

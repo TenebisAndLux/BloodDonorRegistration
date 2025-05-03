@@ -1,72 +1,60 @@
 from flask import Blueprint, request, jsonify
 from sqlalchemy.exc import SQLAlchemyError
 from flask_login import current_user, login_required
-from werkzeug.security import check_password_hash, generate_password_hash
-
+from app.services.email_service import send_password_email
 from ..extensions import db
 from ..models.doctor import Doctor
+from werkzeug.security import generate_password_hash
+import secrets
+import string
 
 doctor = Blueprint('doctor', __name__)
 
 
 @doctor.route('/doctor/search', methods=['POST'])
 def search_doctor():
-    print("\n=== NEW AUTHENTICATION REQUEST ===")
+    return 0
 
+@doctor.route('/doctor/forgot/search', methods=['POST'])
+def forgot_search_doctor():
     try:
-        # Log raw incoming data
-        raw_data = request.data.decode('utf-8')
-        print(f"1. Received raw request data: {raw_data}")
+        if not request.data:
+            return jsonify({'message': 'Пустое тело запроса'}), 400
 
-        data = request.get_json()
-        print(f"2. JSON data: {data}")
+        try:
+            data = request.get_json(force=True)
+        except Exception:
+            return jsonify({'message': 'Некорректный JSON'}), 400
 
-        if not data:
-            print("ERROR: Missing JSON data")
-            return jsonify({'error': 'JSON required'}), 400
+        login = data.get('login') or data.get('username')
+        email = data.get('email')
 
-        in_login = data.get('login')
-        in_password = data.get('password')
-        print(f"3. Input data - Login: '{in_login}', Password (length: {len(in_password) if in_password else 0} chars)")
+        if not (login and email):
+            return jsonify({'message': 'Требуется логин и email'}), 400
 
-        print(f"4. Searching doctor with login '{in_login}' in database...")
-        doctor = Doctor.query.filter_by(login=in_login).first()
-
+        doctor = Doctor.query.filter_by(login=login).first()
         if not doctor:
-            print(f"ERROR: Doctor with login '{in_login}' not found")
-            return jsonify({'error': 'User not found'}), 404
+            return jsonify({'message': 'Пользователь не найден'}), 404
 
-        print(f"5. Doctor found: ID={doctor.institutioncode}/{doctor.servicenumber}")
-        print(f"6. Password hash from DB: {doctor.password}")
+        if doctor.email.lower() != email.lower():
+            return jsonify({'message': 'Email не совпадает с указанным при регистрации'}), 400
 
-        db_hash = doctor.password
-        print("CHECK RESULT:", check_password_hash(db_hash, 'pass123'))
+        # Генерация временного пароля
+        temp_password = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(12))
+        hashed_password = generate_password_hash(temp_password, method='scrypt')
 
-        print("7. Verifying password...")
-        is_password_valid = check_password_hash(doctor.password, in_password)
-        print(f"8. Password verification result: {'SUCCESS' if is_password_valid else 'FAILURE'}")
+        # Обновление пароля в базе данных
+        doctor.password = hashed_password
+        db.session.commit()
 
-        if not is_password_valid:
-            print(f"9. AUTH ERROR: Invalid password for '{in_login}'")
-            print(f"   Entered password: '{in_password}'")
-            print(f"   Password length: {len(in_password)} chars")
-            print(f"   DB hash: {doctor.password}")
-            return jsonify({'error': 'Invalid credentials'}), 401
+        # Отправка временного пароля по email
+        if send_password_email(doctor.email, temp_password):
+            return jsonify({'message': 'Временный пароль отправлен на ваш email'}), 200
+        else:
+            return jsonify({'message': 'Ошибка при отправке письма'}), 500
 
-        print(f"10. AUTH SUCCESS for '{in_login}'")
-        return jsonify({
-            'institutioncode': doctor.institutioncode,
-            'servicenumber': doctor.servicenumber,
-            'name': doctor.name,
-            'secondname': doctor.secondname
-        })
-
-    except Exception as e:
-        print(f"CRITICAL ERROR: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({'error': 'Internal server error'}), 500
-
+    except Exception:
+        return jsonify({'message': 'Ошибка сервера'}), 500
 
 @doctor.route('/doctor/current', methods=['GET'])
 @login_required
@@ -82,26 +70,6 @@ def get_current_doctor():
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
-@doctor.route('/doctor/forgot/search', methods=['POST'])
-def forgot_search_doctor():
-    login = request.json.get('login')
-    email = request.json.get('email')
-
-    if not (login or email):
-        return jsonify({'message': 'Login or email is required'}), 400
-
-    try:
-        doctor = Doctor.query.filter((Doctor.login == login) | (Doctor.email == email)).first()
-        if doctor:
-            return jsonify({'password': doctor.password}), 200
-
-        error_message = 'Doctor not found'
-        return jsonify({'message': error_message}), 404
-    except SQLAlchemyError:
-        error_message = 'Database error'
-        return jsonify({'message': error_message}), 500
-
 
 @doctor.route('/doctor/create', methods=['POST'])
 def create_doctor():

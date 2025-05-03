@@ -1,3 +1,7 @@
+<head>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+</head>
+
 {% extends 'main/login.html' %}
 
 {% block title %}
@@ -20,7 +24,7 @@
             <form action="/forgot_password" method="post" id="login-form">
 
                 <label for="username">Логин:</label>
-                <input type="text" id="username" name="username" placeholder="Введите ваш логин" required autofocus>
+                <input type="text" id="username" name="login" placeholder="Введите ваш логин" required>
 
                 <label for="email">E-mail:</label>
                 <input type="email" id="email" name="email" placeholder="Введите ваш e-mail" required autofocus>
@@ -31,33 +35,50 @@
     </div>
 
     <script>
-        document.getElementById("login-form").addEventListener("submit", function(e) { 
-            e.preventDefault(); 
-            const form = document.getElementById("login-form"); 
-            const formData = new FormData(form); 
-            const requestData = {
-                login: formData.get('login'),
-                email: formData.get('email')
+        document.getElementById("login-form").addEventListener("submit", function(e) {
+            e.preventDefault();
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+            console.log("CSRF Token:", csrfToken);
+
+            if (!csrfToken) {
+                alert("CSRF token not found!");
+                return;
+            }
+
+            const data = {
+                login: document.getElementById('username').value,
+                email: document.getElementById('email').value
             };
-            fetch('/doctor/forgot/search', { 
-                method: 'POST', 
+
+            console.log("Sending data:", data);
+
+            fetch('/doctor/forgot/search', {
+                method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': csrfToken
                 },
-                body: JSON.stringify(requestData)
-            }) 
-            .then(response => response.json()) 
-            .then(data => { 
-                if (data.message) { 
-                    alert(data.message);
-                    window.location.href = '/login'
-                } else { 
-                    const password = data.password; 
-                    alert('Ваш текущий пароль: ' + password);
-                    window.location.href = '/login'
-                } 
-            }) 
-            .catch(error => console.error(error)); 
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                console.log("Response status:", response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("Response data:", data);
+                alert(data.message);
+                if (data.message.includes('отправлен')) {
+                    window.location.href = '/login';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Ошибка: ' + error.message);
+            });
         });
     </script>
 {% endblock %}
