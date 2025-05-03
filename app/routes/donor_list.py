@@ -11,14 +11,16 @@ donor_list = Blueprint('donor_list', __name__)
 def get_donors():
     try:
         order = request.args.get('order', 'asc')
-        # Сортировка по паспорту и institutioncode
         donors = Donor.query.order_by(
             Donor.passportdata.asc() if order == 'asc' else Donor.passportdata.desc()
         ).all()
 
         donorsList = []
         for donor in donors:
+
+            institution_name = donor.institution.nameofinstitution if donor.institution else "Неизвестное учреждение"
             donorDict = {
+                'institutionname': institution_name,
                 'passportdata': donor.passportdata,
                 'institutioncode': donor.institutioncode,
                 'historynumber': donor.historynumber,

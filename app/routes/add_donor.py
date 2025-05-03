@@ -2,6 +2,7 @@ from datetime import datetime
 from flask import Blueprint, request, jsonify
 from werkzeug.exceptions import NotFound
 from ..extensions import db
+from ..models import MedicalInstitution
 from ..models.donor import Donor
 
 donor = Blueprint('donor', __name__)
@@ -29,10 +30,10 @@ def create():
     try:
         db.session.add(donor)
         db.session.commit()
-        return jsonify({'message': 'Donor created successfully.', 'id': donor.passportdata}), 201
+        return jsonify({'message': 'Донор успешно создан. ', 'id': donor.passportdata}), 201
     except Exception as e:
         db.session.rollback()
-        return jsonify({'message': 'An error occurred during donor creation.', 'error': str(e)}), 500
+        return jsonify({'message': 'Данный донор есть в системе.'}), 500
 
 
 @donor.route('/donor/edit/<int:passportdata>/<int:institutioncode>', methods=['POST'])
@@ -55,8 +56,17 @@ def edit(passportdata, institutioncode):
 @donor.route('/donor/search/<int:passportdata>/<int:institutioncode>', methods=['GET'])
 def search_id(passportdata, institutioncode):
     try:
-        donor = Donor.query.get_or_404((passportdata, institutioncode))
-        return jsonify(donor.to_dict()), 200
+        donor_data = db.session.query(Donor, MedicalInstitution.nameofinstitution).join(
+            MedicalInstitution, Donor.institutioncode == MedicalInstitution.institutioncode
+        ).filter(Donor.passportdata == passportdata, Donor.institutioncode == institutioncode).first_or_404()
+
+        donor = donor_data[0]
+        institution_name = donor_data[1] if donor_data[1] else 'Неизвестное учреждение'
+
+        donor_dict = donor.to_dict()
+        donor_dict['institution_name'] = institution_name
+
+        return jsonify(donor_dict), 200
     except NotFound:
         return jsonify({'message': 'Donor not found.'}), 404
     except Exception as e:
@@ -76,7 +86,10 @@ def search_donors():
     bloodgroup = request.args.get('bloodgroup')
     rhfactor = request.args.get('rhfactor')
 
-    query = Donor.query
+    query = db.session.query(Donor, MedicalInstitution.nameofinstitution).outerjoin(
+        MedicalInstitution, Donor.institutioncode == MedicalInstitution.institutioncode
+    )
+
     if name:
         query = query.filter(Donor.name.ilike(f'%{name}%'))
     if secondname:
@@ -99,26 +112,25 @@ def search_donors():
     if gender:
         query = query.filter(Donor.gender.ilike(f'%{gender}%'))
 
-    donors = query.all()
+    results = query.all()
 
-    if not donors:
+    if not results:
         return jsonify({'message': 'Donors not found.'}), 404
 
-    donorsList = []
-    for donor in donors:
-        donorDict = donor.to_dict()
-        donorDict['birthday'] = donor.birthday.strftime('%Y-%m-%d')
-        donorsList.append(donorDict)
+    donors_list = []
+    for donor, nameofinstitution in results:
+        donor_dict = donor.to_dict()
+        donor_dict['institutionname'] = nameofinstitution if nameofinstitution else 'Неизвестное учреждение'
+        donors_list.append(donor_dict)
 
-    return jsonify(donorsList)
-
+    return jsonify(donors_list), 200
 
 @donor.route('/donor/list/get/last', methods=['GET'])
 def get_last_donor_id():
     try:
-        lastDonor = Donor.query.order_by(Donor.passportdata.desc()).first()
-        if lastDonor:
-            return jsonify({'lastId': lastDonor.passportdata})
+        last_donor = Donor.query.order_by(Donor.passportdata.desc()).first()
+        if last_donor:
+            return jsonify({'lastId': last_donor.passportdata}), 200
         else:
             return jsonify({'message': 'No donors found.'}), 404
     except Exception as e:

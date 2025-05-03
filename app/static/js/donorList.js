@@ -22,11 +22,12 @@ function searchDonors() {
             donorsTable.innerHTML = '';
 
             if (data.message === 'Donors not found.') {
-                donorsTable.innerHTML = '<tr><td colspan="9">Доноры не найдены</td></tr>';
+                donorsTable.innerHTML = '<tr><td colspan="11">Доноры не найдены</td></tr>';
             } else {
                 data.forEach(donor => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
+                        <td>${donor.institutionname}</td>
                         <td>${donor.passportdata}</td>
                         <td>${donor.surname} ${donor.name} ${donor.secondname}</td>
                         <td>${donor.gender}</td>
@@ -54,7 +55,7 @@ function searchDonors() {
         .catch(error => {
             console.error('Error:', error);
             const donorsTable = document.getElementById('donors');
-            donorsTable.innerHTML = '<tr><td colspan="9">Ошибка при загрузке доноров</td></tr>';
+            donorsTable.innerHTML = '<tr><td colspan="11">Ошибка при загрузке доноров</td></tr>';
             document.getElementById('loading').style.display = 'none';
         });
 }
@@ -72,13 +73,15 @@ function getDonors() {
             donorsTable.innerHTML = '';
 
             if (donors.length === 0) {
-                donorsTable.innerHTML = `<tr><td colspan="9" style="text-align: center;">Нет данных о донорах</td></tr>`;
+                donorsTable.innerHTML = `<tr><td colspan="11" style="text-align: center;">Нет данных о донорах</td></tr>`;
             } else {
                 donors.forEach(donor => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
+                        <td>${donor.institution_name}</td>
                         <td>${donor.passportdata}</td>
                         <td>${donor.surname} ${donor.name} ${donor.secondname || ''}</td>
+                        <td>${donor.gender}</td>
                         <td>${donor.birthday}</td>
                         <td>${donor.address}</td>
                         <td>${donor.phonenumber}</td>
@@ -103,24 +106,27 @@ function getDonors() {
         .catch(error => {
             console.error('Ошибка:', error);
             const donorsTable = document.getElementById('donors');
-            donorsTable.innerHTML = `<tr><td colspan="9" style="text-align: center; color: red;">Ошибка загрузки данных</td></tr>`;
+            donorsTable.innerHTML = `<tr><td colspan="11" style="text-align: center; color: red;">Ошибка загрузки данных</td></tr>`;
             document.getElementById('loading').style.display = 'none';
         });
 }
 
 function getSelectedDonor() {
     if (!selectedRow) return null;
+    const fio = selectedRow.cells[2].textContent.split(' ');
     return {
-        passportdata: selectedRow.cells[0].textContent,
-        surname: selectedRow.cells[1].textContent.split(' ')[0],
-        name: selectedRow.cells[1].textContent.split(' ')[1],
-        secondname: selectedRow.cells[1].textContent.split(' ')[2] || '',
-        birthday: selectedRow.cells[2].textContent,
-        address: selectedRow.cells[3].textContent,
-        phonenumber: selectedRow.cells[4].textContent,
-        polis: selectedRow.cells[5].textContent,
-        bloodgroup: selectedRow.cells[6].textContent,
-        rhfactor: selectedRow.cells[7].textContent
+        institutionname: selectedRow.cells[0].textContent,
+        passportdata: selectedRow.cells[1].textContent,
+        surname: fio[0],
+        name: fio[1],
+        secondname: fio[2] || '',
+        gender: selectedRow.cells[3].textContent,
+        birthday: selectedRow.cells[4].textContent,
+        address: selectedRow.cells[5].textContent,
+        phonenumber: selectedRow.cells[6].textContent,
+        polis: selectedRow.cells[7].textContent,
+        bloodgroup: selectedRow.cells[8].textContent,
+        rhfactor: selectedRow.cells[9].textContent
     };
 }
 
