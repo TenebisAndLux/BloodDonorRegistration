@@ -12,3 +12,8 @@ class BloodSupply(db.Model):
     procurementdate = db.Column(db.Date)
     bestbeforedate = db.Column(db.Date)
     medicalinstitutioncode = db.Column(db.Integer, db.ForeignKey('medicalinstitution.institutioncode'))
+
+    collections = db.relationship('BloodCollection', back_populates='bloodsupply',
+                                  primaryjoin="and_(BloodSupply.collectiontypecode==BloodCollection.bloodsupplycollectiontypecode, "
+                                              "BloodSupply.institutioncode==BloodCollection.bloodbankinstitutioncode, "
+                                              "BloodSupply.numberstock==BloodCollection.numberstock)")

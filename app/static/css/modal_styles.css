@@ -1,0 +1,42 @@
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+        background: white;
+        margin: 10% auto;
+        padding: 20px;
+        width: 80%;
+        max-width: 800px;
+    }
+    .close {
+        float: right;
+        font-size: 24px;
+        cursor: pointer;
+    }
+    .history-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+    .history-table th, .history-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+    .history-table th {
+        background: #f4f4f4;
+    }
+    .history-notes {
+        width: 100%;
+        resize: vertical;
+    }
+    .ban-warning {
+        color: red;
+        font-weight: bold;
+    }

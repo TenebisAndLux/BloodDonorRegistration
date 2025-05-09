@@ -1,3 +1,6 @@
+from sqlalchemy import and_
+
+from .blood_supply import BloodSupply
 from ..extensions import db
 
 
@@ -15,6 +18,10 @@ class BloodCollection(db.Model):
     passportdetails = db.Column(db.Integer)
     collectiontypecode = db.Column(db.Integer, db.ForeignKey('bloodcollectiontype.collectiontypecode'))
 
+    bloodsupply = db.relationship('BloodSupply', back_populates='collections',
+                                  primaryjoin="and_(BloodSupply.collectiontypecode==BloodCollection.bloodsupplycollectiontypecode, "
+                                              "BloodSupply.institutioncode==BloodCollection.bloodbankinstitutioncode, "
+                                              "BloodSupply.numberstock==BloodCollection.numberstock)")
     __table_args__ = (
         db.ForeignKeyConstraint(
             ['donationregistrationcode', 'servicenumber'],

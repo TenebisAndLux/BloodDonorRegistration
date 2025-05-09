@@ -7,6 +7,7 @@
     <title>Система учета доноров крови</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main_styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/list_styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modal_styles.css') }}">
 </head>
 <body>
 <div class="header">
@@ -307,16 +308,39 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <div id="historyModal" class="modal">
     <div class="modal-content">
-        <span class="close" onclick="closeHistoryModal()">&times;</span>
+        <span class="close" onclick="closeHistoryModal()">×</span>
         <h3>История донора</h3>
-        <div id="historyContent"></div>
+        <div id="historyContent">
+            <div id="medicalHistoryContent">
+                <p><strong>Номер истории:</strong> <span id="historyNumber"></span></p>
+                <p><strong>Паспортные данные:</strong> <span id="passportDetails"></span></p>
+                <p><strong>Дата последнего обследования:</strong> <span id="dateOfLastExamination"></span></p>
+                <p><strong>Результаты анализа:</strong> <textarea id="analysisResults" rows="4"></textarea></p>
+                <p><strong>Запрет на донацию:</strong>
+                    <input type="checkbox" id="banOnDonation">
+                </p>
+            </div>
+            <h4>История сборов крови</h4>
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Дата забора</th>
+                        <th>Тип забора</th>
+                        <th>Объем (мл)</th>
+                        <th>Врач</th>
+                        <th>Результаты обследования</th>
+                    </tr>
+                </thead>
+                <tbody id="bloodCollectionHistory"></tbody>
+            </table>
+        </div>
         <button onclick="saveHistory()">Сохранить</button>
     </div>
 </div>
 
 <div id="bloodCollectionModal" class="modal">
     <div class="modal-content">
-        <span class="close" onclick="closeBloodCollectionModal()">&times;</span>
+        <span class="close" onclick="closeBloodCollectionModal()">×</span>
         <h3>Добавить забор крови</h3>
         <form id="bloodCollectionForm">
             <div class="form-group">
@@ -346,8 +370,33 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
 
             <div class="form-group">
+                <label for="bloodGroup">Группа крови:</label>
+                <select id="bloodGroup" required>
+                    <option value="">Выберите группу</option>
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="AB">AB</option>
+                    <option value="O">O</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="rhFactor">Резус-фактор:</label>
+                <select id="rhFactor" required>
+                    <option value="">Выберите резус</option>
+                    <option value="+">+</option>
+                    <option value="-">-</option>
+                </select>
+            </div>
+
+            <div class="form-group">
                 <label for="examinationResults">Результаты обследования:</label>
                 <textarea id="examinationResults" rows="4"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="additionalNotes">Дополнительные примечания:</label>
+                <textarea id="additionalNotes" rows="2"></textarea>
             </div>
 
             <button type="submit">Сохранить</button>
