@@ -1,55 +1,150 @@
-CREATE TABLE donors
-(
-    id                   SERIAL PRIMARY KEY,
-    first_name           VARCHAR(50) NOT NULL,
-    last_name            VARCHAR(50) NOT NULL,
-    middle_name          VARCHAR(50),
-    date_of_birth        DATE        NOT NULL,
-    gender               VARCHAR(10) NOT NULL,
-    address              VARCHAR(255),
-    phone_number         VARCHAR(20),
-    hospital_affiliation VARCHAR(255),
-    passport_data        VARCHAR(50),
-    insurance_data       VARCHAR(50),
-    blood_type           VARCHAR(5)  NOT NULL,
-    rh_factor            VARCHAR(5)  NOT NULL
+-- Удаление таблиц в правильном порядке
+DROP TABLE IF EXISTS DonorMedicalExaminationResults;
+DROP TABLE IF EXISTS MedicalExamination;
+DROP TABLE IF EXISTS DoctorDonor;
+DROP TABLE IF EXISTS DonorDoctor;
+DROP TABLE IF EXISTS BloodCollection;
+DROP TABLE IF EXISTS BloodSupply;
+DROP TABLE IF EXISTS BloodCollectionType;
+DROP TABLE IF EXISTS Donor;
+DROP TABLE IF EXISTS Doctor;
+DROP TABLE IF EXISTS MedicalHistory;
+DROP TABLE IF EXISTS MedicalInstitution;
+
+-- Создание таблицы MedicalInstitution
+CREATE TABLE MedicalInstitution (
+   InstitutionCode      SERIAL PRIMARY KEY,
+   NameOfInstitution    VARCHAR(255) NOT NULL,
+   Address              VARCHAR(255) NOT NULL,
+   ContactPhoneNumber   VARCHAR(15)  NOT NULL,
+   Email                VARCHAR(255) NOT NULL,
+   TypeOfInstitution    VARCHAR(100) NOT NULL
 );
 
-CREATE TABLE medicalhistory
-(
-    id                    SERIAL PRIMARY KEY,
-    donor_id              INT     NOT NULL,
-    last_examination_date DATE    NOT NULL,
-    test_results          VARCHAR(255),
-    donation_ban          BOOLEAN NOT NULL,
-    CONSTRAINT FK_DonorID_MedicalHistory FOREIGN KEY (donor_id) REFERENCES donors (id)
+-- Создание таблицы Doctor
+CREATE TABLE Doctor (
+   InstitutionCode      INT4 NOT NULL REFERENCES MedicalInstitution(InstitutionCode),
+   ServiceNumber        INT4 NOT NULL,
+   Role                 VARCHAR(100) NOT NULL,
+   Name                 VARCHAR(100) NOT NULL,
+   SecondName           VARCHAR(100) NOT NULL,
+   JobTitle             VARCHAR(100) NOT NULL,
+   Login                VARCHAR(50)  NOT NULL,
+   Password             VARCHAR(255) NOT NULL,
+   Email                VARCHAR(255) NOT NULL,
+   PRIMARY KEY (InstitutionCode, ServiceNumber)
 );
 
-CREATE TABLE bloodcollections
-(
-    id              SERIAL PRIMARY KEY,
-    collection_date DATE        NOT NULL,
-    donor_id        INT         NOT NULL,
-    collection_type VARCHAR(50) NOT NULL,
-    CONSTRAINT FK_DonorID_BloodCollections FOREIGN KEY (donor_id) REFERENCES donors (id)
+-- Создание таблицы MedicalHistory
+CREATE TABLE MedicalHistory (
+   HistoryNumber        SERIAL PRIMARY KEY,
+   PassportDetails      INT4 NOT NULL,
+   DateOfLastExamination DATE NOT NULL,
+   AnalysisResults      TEXT,
+   BanOnDonation        BOOLEAN DEFAULT FALSE
 );
 
-CREATE TABLE reports
-(
-    id             SERIAL PRIMARY KEY,
-    report_type    VARCHAR(50) NOT NULL,
-    creation_date  DATE        NOT NULL,
-    report_content TEXT,
-    report_file    BYTEA
+-- Создание таблицы Donor
+CREATE TABLE Donor (
+   PassportData         INT4 NOT NULL,
+   InstitutionCode      INT4 NOT NULL REFERENCES MedicalInstitution(InstitutionCode),
+   HistoryNumber        INT4 REFERENCES MedicalHistory(HistoryNumber),
+   Name                 VARCHAR(100) NOT NULL,
+   SecondName           VARCHAR(100) NOT NULL,
+   SurName              VARCHAR(100) NOT NULL,
+   Birthday             DATE NOT NULL,
+   Gender               VARCHAR(10)  NOT NULL,
+   Address              VARCHAR(255) NOT NULL,
+   PhoneNumber          VARCHAR(15)  NOT NULL,
+   Polis                VARCHAR(20)  NOT NULL,
+   BloodGroup           VARCHAR(3)   NOT NULL,
+   RhFactor             VARCHAR(1)   NOT NULL,
+   PRIMARY KEY (PassportData, InstitutionCode)
 );
 
-CREATE TABLE doctors
-(
-    id         SERIAL PRIMARY KEY,
-    first_name VARCHAR(50)        NOT NULL,
-    last_name  VARCHAR(50)        NOT NULL,
-    position   VARCHAR(50)        NOT NULL,
-    login      VARCHAR(50) UNIQUE NOT NULL,
-    password   VARCHAR(50)        NOT NULL,
-    email      VARCHAR(50)
+-- Создание таблицы BloodCollectionType
+CREATE TABLE BloodCollectionType (
+   CollectionTypeCode   SERIAL PRIMARY KEY,
+   Name                 VARCHAR(100) NOT NULL
+);
+
+-- Создание таблицы BloodSupply
+CREATE TABLE BloodSupply (
+   CollectionTypeCode   INT4 NOT NULL REFERENCES BloodCollectionType(CollectionTypeCode),
+   InstitutionCode      INT4 NOT NULL REFERENCES MedicalInstitution(InstitutionCode),
+   NumberStock          INT4 NOT NULL,
+   NumberCollections    INT4,
+   BloodGroup           VARCHAR(3),
+   RhFactor             VARCHAR(1),
+   BloodVolume          FLOAT8,
+   ProcurementDate      DATE,
+   BestBeforeDate       DATE,
+   MedicalInstitutionCode INT4 REFERENCES MedicalInstitution(InstitutionCode),
+   PRIMARY KEY (CollectionTypeCode, InstitutionCode, NumberStock)
+);
+
+-- Создание таблицы BloodCollection
+CREATE TABLE BloodCollection (
+   BloodSupplyCollectionTypeCode INT4 NOT NULL,
+   BloodBankInstitutionCode INT4 NOT NULL,
+   NumberStock          INT4 NOT NULL,
+   Number               INT4 NOT NULL,
+   DonationRegistrationCode INT4,
+   ServiceNumber        INT4,
+   PassportData         INT4,
+   InstitutionCode      INT4,
+   CollectionDate       DATE,
+   PassportDetails      INT4,
+   CollectionTypeCode   INT4 REFERENCES BloodCollectionType(CollectionTypeCode),
+   PRIMARY KEY (BloodSupplyCollectionTypeCode, BloodBankInstitutionCode, NumberStock, Number),
+   FOREIGN KEY (DonationRegistrationCode, ServiceNumber) REFERENCES Doctor(InstitutionCode, ServiceNumber),
+   FOREIGN KEY (PassportData, InstitutionCode) REFERENCES Donor(PassportData, InstitutionCode),
+   FOREIGN KEY (BloodSupplyCollectionTypeCode, BloodBankInstitutionCode, NumberStock)
+      REFERENCES BloodSupply(CollectionTypeCode, InstitutionCode, NumberStock)
+);
+
+-- Создание таблицы DoctorDonor
+CREATE TABLE DoctorDonor (
+   PassportData         INT4 NOT NULL,
+   InstitutionCode      INT4 NOT NULL,
+   DonationRegistrationCode INT4 NOT NULL,
+   ServiceNumber        INT4 NOT NULL,
+   PRIMARY KEY (PassportData, InstitutionCode, DonationRegistrationCode, ServiceNumber),
+   FOREIGN KEY (PassportData, InstitutionCode) REFERENCES Donor(PassportData, InstitutionCode),
+   FOREIGN KEY (DonationRegistrationCode, ServiceNumber) REFERENCES Doctor(InstitutionCode, ServiceNumber)
+);
+
+-- Создание таблицы DonorDoctor
+CREATE TABLE DonorDoctor (
+   DonationRegistrationCode INT4 NOT NULL,
+   ServiceNumber        INT4 NOT NULL,
+   PassportData         INT4 NOT NULL,
+   InstitutionCode      INT4 NOT NULL,
+   PRIMARY KEY (DonationRegistrationCode, ServiceNumber, PassportData, InstitutionCode),
+   FOREIGN KEY (DonationRegistrationCode, ServiceNumber) REFERENCES Doctor(InstitutionCode, ServiceNumber),
+   FOREIGN KEY (PassportData, InstitutionCode) REFERENCES Donor(PassportData, InstitutionCode)
+);
+
+-- Создание таблицы MedicalExamination
+CREATE TABLE MedicalExamination (
+   Number               SERIAL PRIMARY KEY,
+   PassportData         INT4,
+   InstitutionCode      INT4,
+   DonationRegistrationCode INT4,
+   ServiceNumber        INT4,
+   PassportDetails      INT4,
+   DateOfExamination    DATE,
+   SurveyResults        TEXT,
+   PersonnelNumber      INT4,
+   FOREIGN KEY (DonationRegistrationCode, ServiceNumber) REFERENCES Doctor(InstitutionCode, ServiceNumber),
+   FOREIGN KEY (PassportData, InstitutionCode) REFERENCES Donor(PassportData, InstitutionCode)
+);
+
+-- Создание таблицы DonorMedicalExaminationResults
+CREATE TABLE DonorMedicalExaminationResults (
+   Number               INT4 NOT NULL REFERENCES MedicalExamination(Number),
+   PassportData         INT4 NOT NULL,
+   InstitutionCode      INT4 NOT NULL,
+   PRIMARY KEY (Number, PassportData, InstitutionCode),
+   FOREIGN KEY (PassportData, InstitutionCode) REFERENCES Donor(PassportData, InstitutionCode)
 );

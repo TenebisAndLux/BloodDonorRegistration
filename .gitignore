@@ -162,3 +162,5 @@ cython_debug/
 .idea/
 test_mail.py
 app/config.py
+app/crypto
+sql/

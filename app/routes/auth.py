@@ -33,8 +33,18 @@ def login():
         password = data.get('password')
         print(f"[3] Attempting login for: {login}")
 
-        # Database query
-        doctor = Doctor.query.filter_by(login=login).first()
+        # Шифруем логин, как это сделано в базе данных
+        cipher = current_app.config.get('ENCRYPTION_CIPHER')
+        if cipher:
+            print(f"login: {login}")
+            print(f"login.encode('utf-8'): {login.encode('utf-8')}")
+            encrypted_login = cipher.encrypt(login.encode('utf-8'), mode='ECB').hex()
+            print(f"encrypted_login: {cipher.encrypt(login.encode('utf-8'), mode='ECB').hex()}")
+        else:
+            encrypted_login = login  # Если шифратор не доступен, работаем с простым логином (не рекомендуется)
+
+        # Database query for encrypted login
+        doctor = Doctor.query.filter_by(_login=encrypted_login).first()
         if not doctor:
             print(f"[ERROR] Doctor not found for login: {login}")
             return jsonify({'error': 'Invalid credentials'}), 401

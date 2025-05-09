@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask, request
 from flask_cors import CORS
 from flask_wtf import CSRFProtect
@@ -7,25 +9,13 @@ from flask_wtf.csrf import generate_csrf
 from app.services.email_service import init_mail
 
 from .config import Config
+from .crypto import load_key
+from .crypto.magma_cipher import MagmaCipher
 
 from .extensions import (db)
 from .extensions import migrate
 
-
-from .models import Doctor
 from .routes.main import main
-from .routes.auth import auth
-from .routes.forgot_login import forgot_login
-from .routes.donor import donor
-from .routes.donor_list import donor_list
-from .routes.doctor_info import doctor_info
-from .routes.blood_bank import blood_bank
-from .routes.hospital_info import hospital_info
-from .routes.report_system import report_system
-from .routes.information_system import information_system
-from .routes.doctor import doctor
-from .routes.medical_history import medical_history
-from .routes.blood_collections import blood_collection
 
 
 def create_app(config_class=Config):
@@ -60,6 +50,29 @@ def create_app(config_class=Config):
         except Exception as e:
             app.logger.error(f"Error loading user: {str(e)}")
             return None
+
+    try:
+        master_key = load_key()
+        cipher = MagmaCipher(master_key)
+        app.config['ENCRYPTION_CIPHER'] = cipher
+        print(f"[INFO] Encryption initialized successfully. Key: {master_key}")
+    except Exception as e:
+        app.logger.error(f"[ERROR] Failed to load encryption key: {e}")
+        raise
+
+    from .models import Doctor
+    from .routes.auth import auth
+    from .routes.forgot_login import forgot_login
+    from .routes.donor import donor
+    from .routes.donor_list import donor_list
+    from .routes.doctor_info import doctor_info
+    from .routes.blood_bank import blood_bank
+    from .routes.hospital_info import hospital_info
+    from .routes.report_system import report_system
+    from .routes.information_system import information_system
+    from .routes.doctor import doctor
+    from .routes.medical_history import medical_history
+    from .routes.blood_collections import blood_collection
 
     app.register_blueprint(auth)
     app.register_blueprint(doctor)

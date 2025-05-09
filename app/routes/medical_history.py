@@ -3,7 +3,7 @@ import sys
 from flask import Blueprint, jsonify, request
 from sqlalchemy.exc import IntegrityError
 
-from .. import Doctor
+from ..models.doctor import Doctor
 from ..extensions import db
 from ..models.blood_collection import BloodCollection
 from ..models.medical_examination import MedicalExamination

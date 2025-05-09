@@ -1,6 +1,3 @@
-from sqlalchemy import and_
-
-from .blood_supply import BloodSupply
 from ..extensions import db
 
 

@@ -4,7 +4,7 @@ from flask_login import current_user
 from werkzeug.exceptions import NotFound
 from sqlalchemy import cast, String
 
-from .. import Doctor
+from ..models.doctor import Doctor
 from ..extensions import db
 from ..models import MedicalInstitution
 from ..models.blood_collection import BloodCollection
