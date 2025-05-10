@@ -80,52 +80,107 @@
     }
 </script>
 
-<div class="container">
-    <h1>Банк крови</h1>
+<main class="content-wrapper">
 
-    <!-- Форма поиска -->
-    <form id="search-form" class="search-form" onsubmit="event.preventDefault(); searchBloodSupplies();">
-        <div class="search-row">
-            <input type="text" id="blood-group-search" placeholder="Группа крови">
-            <input type="text" id="rh-factor-search" placeholder="Резус-фактор">
-            <input type="date" id="best-before-date-search" placeholder="Годен до">
-            <button type="submit" class="search-button">Поиск</button>
-            <button type="button" class="clear-button" onclick="clearSearch()">Очистить</button>
-        </div>
-    </form>
-
-    <!-- Таблица с запасами крови -->
-    <div class="table-container">
-        <table id="blood-supplies-table">
-            <thead>
-                <tr>
-                    <th>Группа крови</th>
-                    <th>Резус-фактор</th>
-                    <th>Объем (мл)</th>
-                    <th>Дата заготовки</th>
-                    <th>Годен до</th>
-                    <th>Тип заготовки</th>
-                    <th>Действия</th>
-                </tr>
-            </thead>
-            <tbody id="blood-supplies-body">
-                <!-- Данные будут загружены через JavaScript -->
-            </tbody>
+<div class="search-container">
+    <form id="search-form">
+        <table>
+            <tr>
+                <th><label for="blood-group">Группа крови:</label></th>
+                <td>
+                    <select id="blood-group" name="blood_group">
+                        <option value="">Все</option>
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="AB">AB</option>
+                        <option value="O">O</option>
+                    </select>
+                </td>
+                <th><label for="rh-factor">Резус-фактор:</label></th>
+                <td>
+                    <select id="rh-factor" name="rh_factor">
+                        <option value="">Все</option>
+                        <option value="+">+</option>
+                        <option value="-">-</option>
+                    </select>
+                </td>
+                <th><label for="best-before">Годен до:</label></th>
+                <td><input type="date" id="best-before" name="best_before"></td>
+            </tr>
+            <tr>
+                <td colspan="6" style="text-align: right;">
+                    <button type="button" onclick="searchBloodSupplies()">Найти</button>
+                    <button type="reset">Очистить</button>
+                </td>
+            </tr>
         </table>
-    </div>
+    </form>
+</div>
 
-    <!-- Пагинация -->
-    <div class="pagination">
-        <button id="prev-page" onclick="prevPage()">Назад</button>
-        <span id="page-info">Страница 1 из 1</span>
-        <button id="next-page" onclick="nextPage()">Вперед</button>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchForm = document.getElementById('search-form');
+
+    searchForm.addEventListener('reset', function() {
+        setTimeout(() => searchBloodSupplies(), 0);
+    });
+});
+</script>
+
+<div class="action-buttons">
+    <button onclick="requestBlood()">Запросить кровь</button>
+</div>
+
+<table class="donors-list">
+    <thead>
+    <tr>
+        <th>Группа крови</th>
+        <th>Резус-фактор</th>
+        <th>Объем (мл)</th>
+        <th>Дата заготовки</th>
+        <th>Годен до</th>
+        <th>Тип заготовки</th>
+        <th>Действия</th>
+    </tr>
+    </thead>
+    <tbody id="blood-supplies">
+    </tbody>
+</table>
+
+<!-- Модальное окно для карты -->
+<div id="map-modal" class="modal" style="display: none;">
+    <div class="modal-content" style="width: 80%; max-width: 900px;">
+        <span class="close" onclick="closeMapModal()">&times;</span>
+        <h3 id="hospital-title">Маршрут до больницы</h3>
+        <div id="route-info" style="margin-bottom: 15px;"></div>
+        <div id="map" style="width: 100%; height: 500px;"></div>
     </div>
 </div>
-<!-- Подключение Yandex Maps API -->
-<script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&apikey=ваш_api_ключ"></script>
 
+<script>
+    function openMapModal() {
+        document.getElementById('map-modal').style.display = 'block';
+    }
+
+    function closeMapModal() {
+        document.getElementById('map-modal').style.display = 'none';
+        document.getElementById('map').innerHTML = '';
+    }
+</script>
+
+<div id="map-container" style="display: none; margin-top: 20px;">
+    <h3>Найденная кровь в ближайшей больнице</h3>
+    <div id="map" style="width: 100%; height: 400px;"></div>
+</div>
+
+</main>
+
+<div class="footer">
+    <span>Разработка и поддержка - ООО "DONOR MIRROR"</span>
+</div>
+
+<script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&apikey=9dad9f19-5be6-47bd-9dae-d0d19e55ab7c"></script>
 <script src="{{ url_for('static', filename='js/bloodBankScripts.js') }}"></script>
 <script src="{{ url_for('static', filename='js/index_scripts.js') }}"></script>
-<script src="{{ url_for('static', filename='js/common.js') }}"></script>
 </body>
 </html>

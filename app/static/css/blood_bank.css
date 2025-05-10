@@ -1,119 +1,73 @@
-/* Стили для страницы "Банк крови" */
+/* Стили для страницы банка крови */
 
-/* Общие настройки контейнера */
-.container {
-    padding: 20px;
+/* Контейнер карты */
+#map-container {
     background-color: #fff;
+    padding: 15px;
     border-radius: 5px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
 }
 
-/* Заголовок страницы */
-h1 {
+#map-container h3 {
     color: #343a40;
-    font-weight: 600;
-    margin-bottom: 20px;
-}
-
-/* Форма поиска крови */
-#blood-search-form {
-    background-color: #f8f9fa;
-    padding: 15px;
-    border-radius: 5px;
-    margin-bottom: 20px;
-}
-
-#blood-search-form .form-row {
-    align-items: center;
-}
-
-#blood-search-form .form-control {
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    padding: 8px;
-    font-size: 14px;
-}
-
-#blood-search-form .btn-primary {
-    background-color: #007bff;
-    border-color: #007bff;
-    padding: 8px 20px;
-    font-size: 14px;
-    transition: background-color 0.2s;
-}
-
-#blood-search-form .btn-primary:hover {
-    background-color: #0056b3;
-    border-color: #004085;
-}
-
-/* Список доступной крови */
-#blood-list {
-    border: 1px solid #dee2e6;
-    border-radius: 5px;
-    padding: 15px;
-    background-color: #ffffff;
-    min-height: 100px;
-}
-
-#blood-list div {
-    padding: 10px;
-    border-bottom: 1px solid #e9ecef;
-    font-size: 16px;
-    color: #495057;
-}
-
-#blood-list div:last-child {
-    border-bottom: none;
-}
-
-#blood-list p {
-    color: #6c757d;
-    font-style: italic;
-    margin: 0;
+    margin-bottom: 10px;
 }
 
 /* Кнопка запроса крови */
-#request-blood-btn {
+.action-buttons button {
     background-color: #28a745;
-    border-color: #28a745;
+    color: white;
+    border: none;
     padding: 10px 20px;
-    font-size: 16px;
-    font-weight: 500;
     border-radius: 4px;
-    transition: background-color 0.2s;
-    margin-bottom: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+    margin-bottom: 15px;
 }
 
-#request-blood-btn:hover {
+.action-buttons button:hover {
     background-color: #218838;
-    border-color: #1e7e34;
 }
 
-/* Контейнер карты */
-#map {
-    border: 1px solid #dee2e6;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+/* Таблица запасов крови */
+.blood-supply-row {
+    transition: background-color 0.2s;
+}
+
+.blood-supply-row:hover {
+    background-color: #f8f9fa;
+}
+
+.write-off-button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background-color 0.3s;
+}
+
+.write-off-button:hover {
+    background-color: #c82333;
 }
 
 /* Адаптивность */
 @media (max-width: 768px) {
-    #blood-search-form .form-row {
-        flex-direction: column;
+    #search-form table {
+        width: 100%;
     }
 
-    #blood-search-form .col {
+    #search-form th, #search-form td {
+        display: block;
+        width: 100%;
+    }
+
+    #search-form tr {
         margin-bottom: 10px;
-        width: 100%;
-    }
-
-    #blood-search-form .btn-primary {
-        width: 100%;
-    }
-
-    #request-blood-btn {
-        width: 100%;
     }
 
     #map {
