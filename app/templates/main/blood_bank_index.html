@@ -1,18 +1,29 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Система учета доноров крови - Банк крови</title>
+    <title>Система учета доноров крови</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main_styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/list_styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modal_styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/blood_bank.css') }}">
 </head>
 <body>
 <div class="header">
-    <div class="hospital-name">Больница имени Н.И. Пирогова</div>
+    <div class="left-group">
+        <div class="hospital-name" id="hospital-name">Загрузка...</div>
+        <div class="navigation">
+            <button onclick="location.href='/donor/list'">✎ Доноры</button>
+            <button onclick="location.href='/reports'">📜 Отчеты</button>
+            <button onclick="location.href='/blood_bank'">🗑 Банк крови</button>
+        </div>
+    </div>
+
     <div class="name-container" onmouseenter="showLogoutButton()" onmouseleave="hideLogoutButton()">
-        <div class="name" onfocus="showLogoutButton()">
-            Петрова А.С. (Доктор)
+        <div class="name" onfocus="showLogoutButton()" id="doctor-name">
+            Загрузка...
         </div>
         <div class="exit-button" style="display: none" onmouseenter="showLogoutButton()"
              onmouseleave="hideLogoutButton()" onclick="location.href='/login'">Выход
@@ -20,255 +31,101 @@
     </div>
 </div>
 
-<div class="search-container">
-    <form id="search-form">
-        <table>
-            <tr>
-                <th><label for="blood_group">Группа крови:</label></th>
-                <td>
-                    <select id="blood_group" name="blood_group">
-                        <option value="">Все</option>
-                        <option value="A">A</option>
-                        <option value="B">B</option>
-                        <option value="AB">AB</option>
-                        <option value="O">O</option>
-                    </select>
-                </td>
+<div id="loading" style="display: none; text-align: center; padding: 10px;">Загрузка...</div>
 
-                <th><label for="rh_factor">Резус-фактор:</label></th>
-                <td>
-                    <select id="rh_factor" name="rh_factor">
-                        <option value="">Все</option>
-                        <option value="+">+</option>
-                        <option value="-">-</option>
-                    </select>
-                </td>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const loadingElement = document.getElementById('loading');
 
-                <th><label for="institution">Учреждение:</label></th>
-                <td>
-                    <select id="institution" name="institution">
-                        <option value="">Все</option>
-                        <option value="1">Городская больница №1</option>
-                        <option value="2">Центр крови</option>
-                        <option value="3">Поликлиника №3</option>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <th><label for="date_from">Дата от:</label></th>
-                <td><input type="date" id="date_from" name="date_from"></td>
+        function showLoading() {
+            loadingElement.style.display = 'block';
+        }
 
-                <th><label for="date_to">Дата до:</label></th>
-                <td><input type="date" id="date_to" name="date_to"></td>
+        function hideLoading() {
+            loadingElement.style.display = 'none';
+        }
 
-                <th><label for="expiry_soon">Истекает в течение:</label></th>
-                <td>
-                    <select id="expiry_soon" name="expiry_soon">
-                        <option value="">Не учитывать</option>
-                        <option value="7">7 дней</option>
-                        <option value="14">14 дней</option>
-                        <option value="30">30 дней</option>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="6" style="text-align: right;">
-                    <button type="button" onclick="searchBloodSupplies()">Найти</button>
-                    <button type="reset" onclick="resetSearch()">Очистить</button>
-                </td>
-            </tr>
-        </table>
+        fetch('/doctor/current')
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('doctor-name').textContent = 'Врач не найден';
+                    document.getElementById('hospital-name').textContent = 'Учреждение не найдено';
+                } else {
+                    document.getElementById('doctor-name').textContent = `${data.secondname} ${data.name.charAt(0)}.`;
+                    document.getElementById('hospital-name').textContent = data.institutionname;
+                    document.getElementById('hospital-name').dataset.institutionCode = data.institutioncode;
+                }
+                searchBloodSupplies();
+                hideLoading();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('doctor-name').textContent = 'Ошибка загрузки';
+                document.getElementById('hospital-name').textContent = 'Ошибка загрузки';
+                searchBloodSupplies();
+                hideLoading();
+            });
+    });
+
+    function showLogoutButton() {
+        document.querySelector('.exit-button').style.display = 'block';
+    }
+
+    function hideLogoutButton() {
+        document.querySelector('.exit-button').style.display = 'none';
+    }
+</script>
+
+<div class="container">
+    <h1>Банк крови</h1>
+
+    <!-- Форма поиска -->
+    <form id="search-form" class="search-form" onsubmit="event.preventDefault(); searchBloodSupplies();">
+        <div class="search-row">
+            <input type="text" id="blood-group-search" placeholder="Группа крови">
+            <input type="text" id="rh-factor-search" placeholder="Резус-фактор">
+            <input type="date" id="best-before-date-search" placeholder="Годен до">
+            <button type="submit" class="search-button">Поиск</button>
+            <button type="button" class="clear-button" onclick="clearSearch()">Очистить</button>
+        </div>
     </form>
-</div>
 
-<div class="action-buttons">
-    <button onclick="addBloodSupplyModal()">Добавить запас</button>
-    <button onclick="editBloodSupplyModal()">Редактировать данные</button>
-    <button onclick="generateBloodReport()">Сформировать отчет</button>
-</div>
+    <!-- Таблица с запасами крови -->
+    <div class="table-container">
+        <table id="blood-supplies-table">
+            <thead>
+                <tr>
+                    <th>Группа крови</th>
+                    <th>Резус-фактор</th>
+                    <th>Объем (мл)</th>
+                    <th>Дата заготовки</th>
+                    <th>Годен до</th>
+                    <th>Тип заготовки</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody id="blood-supplies-body">
+                <!-- Данные будут загружены через JavaScript -->
+            </tbody>
+        </table>
+    </div>
 
-<!-- Модальное окно для добавления нового запаса крови -->
-<div id="addBloodSupplyModal" class="modal-add">
-    <div class="modal-add-content">
-        <span class="close" onclick="closeAddModal()">&times;</span>
-        <form id="addBloodSupplyForm">
-            <table>
-                <tr>
-                    <th><label for="addBloodGroup">Группа крови:</label></th>
-                    <td>
-                        <select id="addBloodGroup" name="blood_group" required>
-                            <option value="A">A</option>
-                            <option value="B">B</option>
-                            <option value="AB">AB</option>
-                            <option value="O">O</option>
-                        </select>
-                    </td>
-                    <th><label for="addRhFactor">Резус-фактор:</label></th>
-                    <td>
-                        <select id="addRhFactor" name="rh_factor" required>
-                            <option value="+">+</option>
-                            <option value="-">-</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <th><label for="addVolume">Объем (мл):</label></th>
-                    <td><input type="number" id="addVolume" name="volume" min="1" required></td>
-                    <th><label for="addInstitution">Учреждение:</label></th>
-                    <td>
-                        <select id="addInstitution" name="institution" required>
-                            <option value="1">Городская больница №1</option>
-                            <option value="2">Центр крови</option>
-                            <option value="3">Поликлиника №3</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <th><label for="addCollectionDate">Дата заготовки:</label></th>
-                    <td><input type="date" id="addCollectionDate" name="collection_date" required></td>
-                    <th><label for="addExpiryDate">Срок годности:</label></th>
-                    <td><input type="date" id="addExpiryDate" name="expiry_date" required></td>
-                </tr>
-                <tr>
-                    <th><label for="addDonorId">ID донора:</label></th>
-                    <td><input type="text" id="addDonorId" name="donor_id"></td>
-                    <th><label for="addStatus">Статус:</label></th>
-                    <td>
-                        <select id="addStatus" name="status">
-                            <option value="available">Доступен</option>
-                            <option value="reserved">Зарезервирован</option>
-                            <option value="used">Использован</option>
-                        </select>
-                    </td>
-                </tr>
-            </table>
-            <div class="modal-add-action-buttons">
-                <button type="submit">Добавить</button>
-            </div>
-        </form>
+    <!-- Пагинация -->
+    <div class="pagination">
+        <button id="prev-page" onclick="prevPage()">Назад</button>
+        <span id="page-info">Страница 1 из 1</span>
+        <button id="next-page" onclick="nextPage()">Вперед</button>
     </div>
 </div>
+<!-- Подключение Yandex Maps API -->
+<script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&apikey=ваш_api_ключ"></script>
 
-<!-- Модальное окно для редактирования данных о запасе крови -->
-<div id="editBloodSupplyModal" class="modal-edit">
-    <div class="modal-edit-content">
-        <span class="close" onclick="closeEditModal()">&times;</span>
-        <form id="editBloodSupplyForm">
-            <table>
-                <tr>
-                    <th><label for="editBloodGroup">Группа крови:</label></th>
-                    <td>
-                        <select id="editBloodGroup" name="blood_group" required>
-                            <option value="A">A</option>
-                            <option value="B">B</option>
-                            <option value="AB">AB</option>
-                            <option value="O">O</option>
-                        </select>
-                    </td>
-                    <th><label for="editRhFactor">Резус-фактор:</label></th>
-                    <td>
-                        <select id="editRhFactor" name="rh_factor" required>
-                            <option value="+">+</option>
-                            <option value="-">-</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <th><label for="editVolume">Объем (мл):</label></th>
-                    <td><input type="number" id="editVolume" name="volume" min="1" required></td>
-                    <th><label for="editInstitution">Учреждение:</label></th>
-                    <td>
-                        <select id="editInstitution" name="institution" required>
-                            <option value="1">Городская больница №1</option>
-                            <option value="2">Центр крови</option>
-                            <option value="3">Поликлиника №3</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <th><label for="editCollectionDate">Дата заготовки:</label></th>
-                    <td><input type="date" id="editCollectionDate" name="collection_date" required></td>
-                    <th><label for="editExpiryDate">Срок годности:</label></th>
-                    <td><input type="date" id="editExpiryDate" name="expiry_date" required></td>
-                </tr>
-                <tr>
-                    <th><label for="editDonorId">ID донора:</label></th>
-                    <td><input type="text" id="editDonorId" name="donor_id"></td>
-                    <th><label for="editStatus">Статус:</label></th>
-                    <td>
-                        <select id="editStatus" name="status">
-                            <option value="available">Доступен</option>
-                            <option value="reserved">Зарезервирован</option>
-                            <option value="used">Использован</option>
-                        </select>
-                    </td>
-                </tr>
-            </table>
-            <div class="modal-edit-action-buttons">
-                <button type="submit">Сохранить</button>
-                <button type="button" onclick="deleteBloodSupply()">Удалить</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<table class="blood-supply-list">
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>Группа крови</th>
-        <th>Резус</th>
-        <th>Объем (мл)</th>
-        <th>Учреждение</th>
-        <th>Дата заготовки</th>
-        <th>Срок годности</th>
-        <th>Статус</th>
-        <th>ID донора</th>
-    </tr>
-    </thead>
-    <tbody>
-        <!-- Пример данных из БД -->
-        <tr onclick="selectBloodSupply(this)" data-id="101">
-            <td>101</td>
-            <td>A</td>
-            <td>+</td>
-            <td>450</td>
-            <td>Центр крови</td>
-            <td>15.10.2023</td>
-            <td>15.11.2023</td>
-            <td>Доступен</td>
-            <td>D-12345</td>
-        </tr>
-        <tr onclick="selectBloodSupply(this)" data-id="102">
-            <td>102</td>
-            <td>B</td>
-            <td>-</td>
-            <td>500</td>
-            <td>Городская больница №1</td>
-            <td>10.10.2023</td>
-            <td>10.11.2023</td>
-            <td>Зарезервирован</td>
-            <td>D-12346</td>
-        </tr>
-        <tr onclick="selectBloodSupply(this)" data-id="103">
-            <td>103</td>
-            <td>O</td>
-            <td>+</td>
-            <td>400</td>
-            <td>Поликлиника №3</td>
-            <td>20.10.2023</td>
-            <td>20.11.2023</td>
-            <td>Доступен</td>
-            <td>D-12347</td>
-        </tr>
-    </tbody>
-</table>
-
-<div class="footer">
-    <span>Разработка и поддержка - ООО "DONOR MIRROR"</span>
-</div>
-
-<script src="{{ url_for('static', filename='js/bloodSupplyScripts.js') }}"></script>
-<script src="{{ url_for('static', filename='js/mainScripts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/bloodBankScripts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/index_scripts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/common.js') }}"></script>
 </body>
 </html>
