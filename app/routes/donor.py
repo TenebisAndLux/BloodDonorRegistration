@@ -110,8 +110,11 @@ def edit_donor():
 @donor.route('/donor/search/<int:passportdata>/<int:institutioncode>', methods=['GET'])
 def search_id(passportdata, institutioncode):
     try:
-        # Выбираем _nameofinstitution напрямую
-        donor_data = db.session.query(Donor, MedicalInstitution._nameofinstitution).join(
+        # Выбираем сырые данные
+        donor_data = db.session.query(
+            Donor,
+            MedicalInstitution._nameofinstitution.hex().label('inst_name_hex')
+        ).join(
             MedicalInstitution, Donor.institutioncode == MedicalInstitution.institutioncode
         ).filter(
             Donor.passportdata == passportdata,
@@ -119,7 +122,7 @@ def search_id(passportdata, institutioncode):
         ).first_or_404()
 
         donor = donor_data[0]
-        raw_name = donor_data[1]  # Hex-строка
+        raw_name = donor_data.inst_name_hex  # Получаем hex-строку напрямую
 
         # Расшифровка
         cipher = MagmaCipher()
@@ -133,7 +136,6 @@ def search_id(passportdata, institutioncode):
         donor_dict['institution_name'] = institution_name
 
         return jsonify(donor_dict), 200
-
     except NotFound:
         return jsonify({'message': 'Donor not found.'}), 404
     except Exception as e:
@@ -144,18 +146,24 @@ def donor_search():
     query = request.args.get('q')
 
     donors = Donor.query.filter(
-        (Donor.name.ilike(f'%{query}%')) |
-        (Donor.secondname.ilike(f'%{query}%')) |
-        (cast(Donor.passportdata, String).ilike(f'%{query}%'))
+        (Donor._name.ilike(f'%{query}%')) |
+        (Donor._secondname.ilike(f'%{query}%')) |
+        (db.cast(Donor.passportdata, db.String).ilike(f'%{query}%'))
     ).limit(10).all()
+
+    cipher = MagmaCipher()
 
     return jsonify({
         'donors': [{
             'passportData': donor.passportdata,
             'institutionCode': donor.institutioncode,
-            'name': donor.name,
-            'secondName': donor.secondname,
-            'bloodGroup': donor.bloodgroup,
-            'rhFactor': donor.rhfactor
+            'name': (cipher.decrypt(bytes.fromhex(donor._name), mode='ECB').decode('utf-8')
+                     if donor._name else 'Неизвестно'),
+            'secondName': (cipher.decrypt(bytes.fromhex(donor._secondname), mode='ECB').decode('utf-8')
+                           if donor._secondname else 'Неизвестно'),
+            'bloodGroup': (cipher.decrypt(bytes.fromhex(donor._bloodgroup), mode='ECB').decode('utf-8')
+                           if donor._bloodgroup else None),
+            'rhFactor': (cipher.decrypt(bytes.fromhex(donor._rhfactor), mode='ECB').decode('utf-8')
+                         if donor._rhfactor else None)
         } for donor in donors]
     })
