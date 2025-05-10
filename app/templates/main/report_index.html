@@ -53,14 +53,12 @@
                     document.getElementById('hospital-name').textContent = data.institutionname;
                     document.getElementById('hospital-name').dataset.institutionCode = data.institutioncode;
                 }
-                searchDonors();
                 hideLoading();
             })
             .catch(error => {
                 console.error('Error:', error);
                 document.getElementById('doctor-name').textContent = 'Ошибка загрузки';
                 document.getElementById('hospital-name').textContent = 'Ошибка загрузки';
-                searchDonors();
                 hideLoading();
             });
     });
