@@ -1,8 +1,6 @@
-// Функция для поиска доноров (с пустыми параметрами по умолчанию)
 async function searchDonors(params = {}) {
     const searchParams = new URLSearchParams();
 
-    // Добавляем параметры поиска, если они переданы
     Object.keys(params).forEach(key => {
         if (params[key]) {
             searchParams.append(key, params[key]);
@@ -65,7 +63,6 @@ async function searchDonors(params = {}) {
     }
 }
 
-// Функция для обработки формы поиска
 function handleSearchForm() {
     const form = document.getElementById('search-form');
     const formData = new FormData(form);
@@ -84,7 +81,6 @@ function handleSearchForm() {
     searchDonors(params);
 }
 
-// Инициализация формы поиска
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('search-form');
     form.addEventListener('submit', (e) => {
@@ -92,7 +88,5 @@ document.addEventListener('DOMContentLoaded', () => {
         setFalseShouldGetDonorsState();
         handleSearchForm();
     });
-
-    // Загружаем всех доноров при первой загрузке страницы
     searchDonors();
 });

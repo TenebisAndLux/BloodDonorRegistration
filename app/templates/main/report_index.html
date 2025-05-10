@@ -20,133 +20,88 @@
     </div>
 </div>
 
-<div class="reports-container">
-    <h2>Формирование отчетов</h2>
-    
-    <div class="report-section">
-        <h3>1. Отчет о донорах по медицинскому учреждению</h3>
-        <form id="report1-form" class="report-form">
-            <div class="form-group">
-                <label for="institution-select">Медицинское учреждение:</label>
-                <select id="institution-select" name="institution" required>
-                    <option value="">Выберите учреждение</option>
-                    <option value="1">Городская больница №1</option>
-                    <option value="2">Центр крови</option>
-                    <option value="3">Поликлиника №3</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="report1-date">На дату:</label>
-                <input type="date" id="report1-date" name="date" required>
-            </div>
-            <button type="button" onclick="generateReport(1)">Сформировать</button>
-            <button type="button" onclick="exportReport(1, 'pdf')">PDF</button>
-            <button type="button" onclick="exportReport(1, 'excel')">Excel</button>
-        </form>
-    </div>
+<div class="content-wrapper">
+    <div class="reports-container">
+        <h2>Формирование отчетов</h2>
 
-    <div class="report-section">
-        <h3>2. Отчет о запасах крови в банке крови</h3>
-        <form id="report2-form" class="report-form">
-            <div class="form-group">
-                <label for="blood-group-filter">Группа крови:</label>
-                <select id="blood-group-filter" name="blood_group">
-                    <option value="">Все</option>
-                    <option value="A">A</option>
-                    <option value="B">B</option>
-                    <option value="AB">AB</option>
-                    <option value="O">O</option>
-                </select>
+        <div class="report-section">
+            <h3>1. Отчет о доноре</h3>
+            <div class="report-content">
+                <div class="preview-content" id="preview-content-1">
+                    <p>Предпросмотр отчета о доноре</p>
+                </div>
+                <form id="report1-form" class="report-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="form-group">
+                        <label for="collectiontypecode">Код типа сбора</label>
+                        <select id="collectiontypecode" name="collectiontypecode" required>
+                            <option value="">Выберите тип сбора</option>
+                            {% for type in collection_types %}
+                            <option value="{{ type.collectiontypecode }}">{{ type.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="institutioncode">Код учреждения</label>
+                        <select id="institutioncode" name="institutioncode" required>
+                            <option value="">Выберите учреждение</option>
+                            {% for institution in institutions %}
+                            <option value="{{ institution.institutioncode }}">{{ institution.nameofinstitution }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="numberstock">Номер запаса</label>
+                        <select id="numberstock" name="numberstock" required>
+                            <option value="">Выберите номер запаса</option>
+                            {% for stock in stocks %}
+                            <option value="{{ stock.numberstock }}">{{ stock.numberstock }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="number">Номер</label>
+                        <select id="number" name="number" required>
+                            <option value="">Выберите номер</option>
+                            {% for num in numbers %}
+                            <option value="{{ num.number }}">{{ num.number }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="button" onclick="generateReport(1)">Сформировать DOCX</button>
+                </form>
             </div>
-            <div class="form-group">
-                <label for="rh-factor-filter">Резус-фактор:</label>
-                <select id="rh-factor-filter" name="rh_factor">
-                    <option value="">Все</option>
-                    <option value="+">Положительный</option>
-                    <option value="-">Отрицательный</option>
-                </select>
-            </div>
-            <button type="button" onclick="generateReport(2)">Сформировать</button>
-            <button type="button" onclick="exportReport(2, 'pdf')">PDF</button>
-            <button type="button" onclick="exportReport(2, 'excel')">Excel</button>
-        </form>
-    </div>
+        </div>
 
-    <div class="report-section">
-        <h3>3. Отчет о донорах, сдавших кровь за период</h3>
-        <form id="report3-form" class="report-form">
-            <div class="form-group">
-                <label for="start-date">Начало периода:</label>
-                <input type="date" id="start-date" name="start_date" required>
+        <div class="report-section">
+            <h3>2. Сводный отчет по учреждению</h3>
+            <div class="report-content">
+                <div class="preview-content" id="preview-content-2">
+                    <p>Предпросмотр сводного отчета</p>
+                </div>
+                <form id="report2-form" class="report-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="form-group">
+                        <label for="institutioncode2">Учреждение</label>
+                        <select id="institutioncode2" name="institutioncode" required>
+                            <option value="">Выберите учреждение</option>
+                            {% for institution in institutions %}
+                            <option value="{{ institution.institutioncode }}">{{ institution.nameofinstitution }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="start_date">Дата начала периода</label>
+                        <input type="date" id="start_date" name="start_date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="end_date">Дата окончания периода</label>
+                        <input type="date" id="end_date" name="end_date" required>
+                    </div>
+                    <button type="button" onclick="generateReport(2)">Сформировать DOCX</button>
+                </form>
             </div>
-            <div class="form-group">
-                <label for="end-date">Конец периода:</label>
-                <input type="date" id="end-date" name="end_date" required>
-            </div>
-            <button type="button" onclick="generateReport(3)">Сформировать</button>
-            <button type="button" onclick="exportReport(3, 'pdf')">PDF</button>
-            <button type="button" onclick="exportReport(3, 'excel')">Excel</button>
-        </form>
-    </div>
-
-    <div class="report-section">
-        <h3>4. Отчет о донорах, готовых к повторной сдаче крови</h3>
-        <form id="report4-form" class="report-form">
-            <div class="form-group">
-                <label for="ready-date">На дату:</label>
-                <input type="date" id="ready-date" name="date" required>
-            </div>
-            <button type="button" onclick="generateReport(4)">Сформировать</button>
-            <button type="button" onclick="exportReport(4, 'pdf')">PDF</button>
-            <button type="button" onclick="exportReport(4, 'excel')">Excel</button>
-        </form>
-    </div>
-
-    <div class="report-section">
-        <h3>5. Отчет о медицинских учреждениях и их запасах крови</h3>
-        <form id="report5-form" class="report-form">
-            <div class="form-group">
-                <label for="institution-type-filter">Тип учреждения:</label>
-                <select id="institution-type-filter" name="institution_type">
-                    <option value="">Все</option>
-                    <option value="Больница">Больница</option>
-                    <option value="Поликлиника">Поликлиника</option>
-                    <option value="Центр крови">Центр крови</option>
-                </select>
-            </div>
-            <button type="button" onclick="generateReport(5)">Сформировать</button>
-            <button type="button" onclick="exportReport(5, 'pdf')">PDF</button>
-            <button type="button" onclick="exportReport(5, 'excel')">Excel</button>
-        </form>
-    </div>
-
-    <div class="report-section">
-        <h3>6. Отчет о запасах крови конкретного медицинского учреждения</h3>
-        <form id="report6-form" class="report-form">
-            <div class="form-group">
-                <label for="specific-institution-select">Учреждение:</label>
-                <select id="specific-institution-select" name="institution" required>
-                    <option value="">Выберите учреждение</option>
-                    <option value="1">Городская больница №1</option>
-                    <option value="2">Центр крови</option>
-                    <option value="3">Поликлиника №3</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="expiry-filter">Показать с истекающим сроком:</label>
-                <input type="checkbox" id="expiry-filter" name="expiry_soon">
-            </div>
-            <button type="button" onclick="generateReport(6)">Сформировать</button>
-            <button type="button" onclick="exportReport(6, 'pdf')">PDF</button>
-            <button type="button" onclick="exportReport(6, 'excel')">Excel</button>
-        </form>
-    </div>
-</div>
-
-<div class="report-preview" id="report-preview">
-    <h3>Предпросмотр отчета</h3>
-    <div class="preview-content" id="preview-content">
-        <p>Выберите отчет и параметры для формирования</p>
+        </div>
     </div>
 </div>
 
@@ -155,6 +110,5 @@
 </div>
 
 <script src="{{ url_for('static', filename='js/reportScripts.js') }}"></script>
-<script src="{{ url_for('static', filename='js/mainScripts.js') }}"></script>
 </body>
 </html>

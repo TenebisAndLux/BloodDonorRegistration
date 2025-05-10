@@ -1,86 +1,64 @@
-// Функция генерации отчета
 function generateReport(reportType) {
-    // Здесь будет логика формирования отчета на основе выбранных параметров
-    const previewContent = document.getElementById('preview-content');
+    let formId = `report${reportType}-form`;
+    let form = document.getElementById(formId);
+    let formData = new FormData(form);
+    let previewId = `preview-content-${reportType}`;
+    let preview = document.getElementById(previewId);
 
-    // Временная заглушка для демонстрации
-    let reportHtml = '<h4>Отчет ' + reportType + '</h4><p>Сформирован: ' + new Date().toLocaleString() + '</p>';
+    // Показываем загрузку
+    preview.innerHTML = '<p class="loading">Генерация отчета...</p>';
 
-    switch(reportType) {
-        case 1:
-            const institution = document.getElementById('institution-select').value;
-            const date = document.getElementById('report1-date').value;
-            reportHtml += '<p>Учреждение: ' + institution + '</p>';
-            reportHtml += '<p>На дату: ' + date + '</p>';
-            reportHtml += generateSampleDonorData();
-            break;
-        case 2:
-            reportHtml += generateSampleBloodSupplyData();
-            break;
-        // Остальные типы отчетов...
+    let xhr = new XMLHttpRequest();
+    xhr.open('POST', `/reports/generate_report_${reportType}`, true);
+    xhr.setRequestHeader('X-CSRF-TOKEN', formData.get('csrf_token'));
+    xhr.responseType = 'blob';
+
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            let blob = new Blob([xhr.response], {
+                type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            });
+
+            // Обновляем предпросмотр
+            preview.innerHTML = `
+                <div class="report-preview-success">
+                    <p>Отчет успешно сгенерирован!</p>
+                    <button onclick="downloadReport(${reportType})">Скачать отчет</button>
+                </div>
+            `;
+
+            // Сохраняем blob для последующего скачивания
+            sessionStorage.setItem(`report_${reportType}_blob`, URL.createObjectURL(blob));
+        } else {
+            preview.innerHTML = `
+                <div class="report-preview-error">
+                    <p>Ошибка при генерации отчета (код ${xhr.status})</p>
+                    <button onclick="generateReport(${reportType})">Повторить</button>
+                </div>
+            `;
+        }
+    };
+
+    xhr.onerror = function() {
+        preview.innerHTML = `
+            <div class="report-preview-error">
+                <p>Ошибка связи с сервером</p>
+                <button onclick="generateReport(${reportType})">Повторить</button>
+            </div>
+        `;
+    };
+
+    xhr.send(formData);
+}
+
+function downloadReport(reportType) {
+    let blobUrl = sessionStorage.getItem(`report_${reportType}_blob`);
+    if (blobUrl) {
+        let link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = `report_${reportType}_${new Date().toISOString().slice(0,10)}.docx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
-
-    previewContent.innerHTML = reportHtml;
-}
-
-// Функция экспорта отчета
-function exportReport(reportType, format) {
-    alert('Экспорт отчета ' + reportType + ' в формате ' + format.toUpperCase());
-    // Здесь будет логика экспорта
-}
-
-// Вспомогательные функции для генерации демо-данных
-function generateSampleDonorData() {
-    return `
-        <table class="report-table">
-            <thead>
-                <tr>
-                    <th>ФИО</th>
-                    <th>Группа крови</th>
-                    <th>Дата последней сдачи</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Иванов И.И.</td>
-                    <td>A+</td>
-                    <td>15.10.2023</td>
-                </tr>
-                <tr>
-                    <td>Петрова А.С.</td>
-                    <td>B-</td>
-                    <td>10.10.2023</td>
-                </tr>
-            </tbody>
-        </table>
-    `;
-}
-
-function generateSampleBloodSupplyData() {
-    return `
-        <table class="report-table">
-            <thead>
-                <tr>
-                    <th>Группа крови</th>
-                    <th>Резус-фактор</th>
-                    <th>Объем (л)</th>
-                    <th>Срок годности</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>A</td>
-                    <td>+</td>
-                    <td>15.5</td>
-                    <td>01.11.2023</td>
-                </tr>
-                <tr>
-                    <td>B</td>
-                    <td>-</td>
-                    <td>8.2</td>
-                    <td>25.10.2023</td>
-                </tr>
-            </tbody>
-        </table>
-    `;
 }
