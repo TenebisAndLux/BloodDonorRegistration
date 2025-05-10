@@ -6,12 +6,16 @@ async function prepareEditModal(passportData, institutionCode) {
 
         const donor = await response.json();
 
+        // Сохраняем старые значения
+        document.getElementById('editOldDonorPassportData').value = donor.passportdata;
+        document.getElementById('editOldDonorInstitutionCode').value = donor.institutioncode;
+
+        // Заполняем текущие значения
         document.getElementById('editDonorPassportData').value = donor.passportdata;
         document.getElementById('editDonorInstitutionCode').value = donor.institutioncode;
         document.getElementById('editDonorName').value = donor.name;
         document.getElementById('editDonorSecondName').value = donor.secondname;
         document.getElementById('editDonorSurname').value = donor.surname;
-        document.getElementById('editDonorPassportDisplay').value = donor.passportdata;
         document.getElementById('editDonorBirthday').value = donor.birthday;
         document.getElementById('editDonorGender').value = donor.gender;
         document.getElementById('editDonorAddress').value = donor.address;
@@ -33,15 +37,17 @@ function closeEditModal() {
     document.getElementById('editDonorModal').style.display = 'none';
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('editDonorForm');
     const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
-    form.addEventListener('submit', async function(event) {
+    form.addEventListener('submit', async function (event) {
         event.preventDefault();
         document.getElementById('loading').style.display = 'block';
 
         const formData = {
+            old_passportdata: document.getElementById('editOldDonorPassportData').value,
+            old_institutioncode: document.getElementById('editOldDonorInstitutionCode').value,
             passportdata: document.getElementById('editDonorPassportData').value,
             institutioncode: document.getElementById('editDonorInstitutionCode').value,
             name: document.getElementById('editDonorName').value,
@@ -64,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         try {
-            const response = await fetch(`/donor/edit/${formData.passportdata}/${formData.institutioncode}`, {
+            const response = await fetch('/donor/edit', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -78,10 +84,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(errorData.message || 'Ошибка при обновлении данных донора');
             }
 
-            await response.json();
+            const result = await response.json();
             closeEditModal();
-            searchDonors(); // Обновление таблицы с учетом текущих фильтров
-            alert('Данные донора успешно обновлены!');
+            searchDonors(); // Обновление таблицы
+            alert(result.message || 'Данные донора успешно обновлены!');
         } catch (error) {
             console.error('Ошибка:', error);
             alert(`Ошибка: ${error.message}`);

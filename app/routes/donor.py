@@ -1,12 +1,13 @@
 from datetime import datetime
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from flask_login import current_user
 from werkzeug.exceptions import NotFound
-from sqlalchemy import cast, String
+from sqlalchemy import cast, String, text
 
+from .. import MagmaCipher
 from ..models.doctor import Doctor
 from ..extensions import db
-from ..models import MedicalInstitution
+from ..models import MedicalInstitution, DonorMedicalExaminationResults, DoctorDonor, DonorDoctor, MedicalHistory
 from ..models.blood_collection import BloodCollection
 from ..models.blood_collection_type import BloodCollectionType
 from ..models.blood_supply import BloodSupply
@@ -43,38 +44,96 @@ def create():
         db.session.rollback()
         return jsonify({'message': 'Данный донор есть в системе.'}), 500
 
-
-@donor.route('/donor/edit/<int:passportdata>/<int:institutioncode>', methods=['POST'])
-def edit(passportdata, institutioncode):
-    donor = Donor.query.get_or_404((passportdata, institutioncode))
+@donor.route('/donor/edit', methods=['POST'])
+def edit_donor():
     data = request.get_json()
 
-    for field in donor.to_dict():
-        if field in data:
-            setattr(donor, field, data[field])
+    old_passport = data.get('old_passportdata')
+    old_institution = data.get('old_institutioncode')
+    new_passport = data.get('passportdata')
+    new_institution = data.get('institutioncode')
+
+    if not old_passport or not old_institution:
+        return jsonify({'message': 'Не указаны исходные паспортные данные'}), 400
+
+    donor = Donor.query.get_or_404((old_passport, old_institution))
 
     try:
-        db.session.commit()
-        return jsonify({'message': 'Donor updated successfully.'}), 200
+        with db.session.begin_nested():
+            # Проверяем, изменились ли ключевые поля
+            if new_passport != old_passport or new_institution != old_institution:
+                # Проверяем, нет ли уже донора с новыми данными
+                if Donor.query.get((new_passport, new_institution)):
+                    return jsonify({'message': 'Донор с такими паспортными данными уже существует'}), 400
+
+                # Обновляем все связанные таблицы в одной транзакции
+                related_tables = [
+                    MedicalExamination,
+                    DonorMedicalExaminationResults,
+                    DoctorDonor,
+                    DonorDoctor,
+                    BloodCollection
+                ]
+
+                for table in related_tables:
+                    db.session.query(table).filter_by(
+                        passportdata=old_passport,
+                        institutioncode=old_institution
+                    ).update({
+                        'passportdata': new_passport,
+                        'institutioncode': new_institution
+                    })
+
+                # Для MedicalHistory (если у него другой формат ключа)
+                db.session.query(MedicalHistory).filter_by(
+                    passportdetails=old_passport
+                ).update({
+                    'passportdetails': new_passport
+                })
+
+            # Обновляем поля донора
+            for field, value in data.items():
+                if field not in ['old_passportdata', 'old_institutioncode'] and hasattr(donor, field):
+                    setattr(donor, field, value)
+
+            db.session.commit()
+
+        return jsonify({'message': 'Данные донора успешно обновлены'}), 200
+
     except Exception as e:
         db.session.rollback()
-        return jsonify({'message': 'An error occurred during donor update.', 'error': str(e)}), 500
+        current_app.logger.error(f"Error updating donor: {str(e)}")
+        return jsonify({'message': 'Ошибка при обновлении донора', 'error': str(e)}), 500
+
 
 
 @donor.route('/donor/search/<int:passportdata>/<int:institutioncode>', methods=['GET'])
 def search_id(passportdata, institutioncode):
     try:
-        donor_data = db.session.query(Donor, MedicalInstitution.nameofinstitution).join(
+        # Выбираем _nameofinstitution напрямую
+        donor_data = db.session.query(Donor, MedicalInstitution._nameofinstitution).join(
             MedicalInstitution, Donor.institutioncode == MedicalInstitution.institutioncode
-        ).filter(Donor.passportdata == passportdata, Donor.institutioncode == institutioncode).first_or_404()
+        ).filter(
+            Donor.passportdata == passportdata,
+            Donor.institutioncode == institutioncode
+        ).first_or_404()
 
-        donors = donor_data[0]
-        institution_name = donor_data[1] if donor_data[1] else 'Неизвестное учреждение'
+        donor = donor_data[0]
+        raw_name = donor_data[1]  # Hex-строка
 
-        donor_dict = donors.to_dict()
+        # Расшифровка
+        cipher = MagmaCipher()
+        try:
+            institution_name = cipher.decrypt(bytes.fromhex(raw_name), mode='ECB').decode('utf-8') if raw_name else 'Неизвестное учреждение'
+        except Exception as e:
+            current_app.logger.error(f"[Decryption error] search_id: {e}")
+            institution_name = 'Ошибка расшифровки'
+
+        donor_dict = donor.to_dict()
         donor_dict['institution_name'] = institution_name
 
         return jsonify(donor_dict), 200
+
     except NotFound:
         return jsonify({'message': 'Donor not found.'}), 404
     except Exception as e:
@@ -100,66 +159,3 @@ def donor_search():
             'rhFactor': donor.rhfactor
         } for donor in donors]
     })
-
-@donor.route('/donor/list/search', methods=['GET'])
-def search_donors():
-    name = request.args.get('name')
-    secondname = request.args.get('secondname')
-    surname = request.args.get('surname')
-    birthday = request.args.get('birthday')
-    gender = request.args.get('gender')
-    address = request.args.get('address')
-    phonenumber = request.args.get('phonenumber')
-    polis = request.args.get('polis')
-    bloodgroup = request.args.get('bloodgroup')
-    rhfactor = request.args.get('rhfactor')
-
-    query = db.session.query(Donor, MedicalInstitution.nameofinstitution).outerjoin(
-        MedicalInstitution, Donor.institutioncode == MedicalInstitution.institutioncode
-    )
-
-    if name:
-        query = query.filter(Donor.name.ilike(f'%{name}%'))
-    if secondname:
-        query = query.filter(Donor.secondname.ilike(f'%{secondname}%'))
-    if surname:
-        query = query.filter(Donor.surname.ilike(f'%{surname}%'))
-    if address:
-        query = query.filter(Donor.address.ilike(f'%{address}%'))
-    if phonenumber:
-        query = query.filter(Donor.phonenumber.ilike(f'%{phonenumber}%'))
-    if polis:
-        query = query.filter(Donor.polis.ilike(f'%{polis}%'))
-    if birthday:
-        birthday = datetime.strptime(birthday, '%Y-%m-%d').date()
-        query = query.filter(Donor.birthday == birthday)
-    if bloodgroup:
-        query = query.filter(Donor.bloodgroup.ilike(f'%{bloodgroup}%'))
-    if rhfactor:
-        query = query.filter(Donor.rhfactor.ilike(f'%{rhfactor}%'))
-    if gender:
-        query = query.filter(Donor.gender.ilike(f'%{gender}%'))
-
-    results = query.all()
-
-    if not results:
-        return jsonify({'message': 'Donors not found.'}), 404
-
-    donors_list = []
-    for donor, nameofinstitution in results:
-        donor_dict = donor.to_dict()
-        donor_dict['institutionname'] = nameofinstitution if nameofinstitution else 'Неизвестное учреждение'
-        donors_list.append(donor_dict)
-
-    return jsonify(donors_list), 200
-
-@donor.route('/donor/list/get/last', methods=['GET'])
-def get_last_donor_id():
-    try:
-        last_donor = Donor.query.order_by(Donor.passportdata.desc()).first()
-        if last_donor:
-            return jsonify({'lastId': last_donor.passportdata}), 200
-        else:
-            return jsonify({'message': 'No donors found.'}), 404
-    except Exception as e:
-        return jsonify({'message': 'An error occurred.', 'error': str(e)}), 500

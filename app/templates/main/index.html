@@ -228,20 +228,25 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="modal-edit-content">
         <span class="close" onclick="closeEditModal()">×</span>
         <form id="editDonorForm">
-            <input type="hidden" id="editDonorPassportData" name="passportdata">
-            <input type="hidden" id="editDonorInstitutionCode" name="institutioncode">
+            <!-- Скрытые поля для хранения старых значений -->
+            <input type="hidden" id="editOldDonorPassportData" name="old_passportdata">
+            <input type="hidden" id="editOldDonorInstitutionCode" name="old_institutioncode">
+
             <table>
                 <tr>
                     <th><label for="editDonorName">Имя:</label></th>
                     <td><input type="text" id="editDonorName" name="name" required></td>
+
                     <th><label for="editDonorSecondName">Фамилия:</label></th>
                     <td><input type="text" id="editDonorSecondName" name="secondname" required></td>
+
                     <th><label for="editDonorSurname">Отчество:</label></th>
                     <td><input type="text" id="editDonorSurname" name="surname"></td>
                 </tr>
                 <tr>
                     <th><label for="editDonorBirthday">Д/Р:</label></th>
                     <td><input type="date" id="editDonorBirthday" name="birthday" required></td>
+
                     <th><label for="editDonorGender">Пол:</label></th>
                     <td>
                         <select id="editDonorGender" name="gender" required>
@@ -249,16 +254,19 @@ document.addEventListener('DOMContentLoaded', function() {
                             <option value="F">Женский</option>
                         </select>
                     </td>
+
                     <th><label for="editDonorAddress">Адрес:</label></th>
                     <td><input type="text" id="editDonorAddress" name="address"></td>
                 </tr>
                 <tr>
+                    <th><label for="editDonorPassportData">Паспорт:</label></th>
+                    <td><input type="text" id="editDonorPassportData" name="passportdata"></td>
+
                     <th><label for="editDonorPhoneNumber">Телефон:</label></th>
                     <td><input type="text" id="editDonorPhoneNumber" name="phonenumber"></td>
+
                     <th><label for="editDonorPolis">Полис:</label></th>
                     <td><input type="text" id="editDonorPolis" name="polis"></td>
-                    <th><label for="editDonorPassport">Паспорт:</label></th>
-                    <td><input type="text" id="editDonorPassportDisplay" readonly></td>
                 </tr>
                 <tr>
                     <th><label for="editDonorBloodGroup">Группа крови:</label></th>
@@ -270,6 +278,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <option value="O">O</option>
                         </select>
                     </td>
+
                     <th><label for="editDonorRhFactor">Резус-фактор:</label></th>
                     <td>
                         <select id="editDonorRhFactor" name="rhfactor" required>
@@ -277,14 +286,19 @@ document.addEventListener('DOMContentLoaded', function() {
                             <option value="-">-</option>
                         </select>
                     </td>
+
+                    <th><label for="editDonorInstitutionCode">Код учреждения:</label></th>
+                    <td><input type="text" id="editDonorInstitutionCode" name="institutioncode"></td>
                 </tr>
             </table>
+
             <div class="modal-edit-action-buttons">
                 <button type="submit">Сохранить изменения</button>
             </div>
         </form>
     </div>
 </div>
+
 
 <table class="donors-list">
     <thead>
