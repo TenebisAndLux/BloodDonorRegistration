@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, request
+from flask import Flask, request, render_template
 from flask_cors import CORS
 from flask_wtf import CSRFProtect
 from flask_login import LoginManager
@@ -50,6 +50,14 @@ def create_app(config_class=Config):
         except Exception as e:
             app.logger.error(f"Error loading user: {str(e)}")
             return None
+
+    @app.errorhandler(401)
+    def unauthorized_error(error):
+        return render_template('errors/401.html'), 401
+
+    @app.errorhandler(403)
+    def forbidden_error(error):
+        return render_template('errors/403.html'), 403
 
     try:
         master_key = load_key()
