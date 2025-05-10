@@ -4,51 +4,46 @@ function generateReport(reportType) {
     let formData = new FormData(form);
     let previewId = `preview-content-${reportType}`;
     let preview = document.getElementById(previewId);
+    let csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
     // Показываем загрузку
     preview.innerHTML = '<p class="loading">Генерация отчета...</p>';
 
-    let xhr = new XMLHttpRequest();
-    xhr.open('POST', `/reports/generate_report_${reportType}`, true);
-    xhr.setRequestHeader('X-CSRF-TOKEN', formData.get('csrf_token'));
-    xhr.responseType = 'blob';
-
-    xhr.onload = function() {
-        if (xhr.status === 200) {
-            let blob = new Blob([xhr.response], {
-                type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-            });
-
-            // Обновляем предпросмотр
-            preview.innerHTML = `
-                <div class="report-preview-success">
-                    <p>Отчет успешно сгенерирован!</p>
-                    <button onclick="downloadReport(${reportType})">Скачать отчет</button>
-                </div>
-            `;
-
-            // Сохраняем blob для последующего скачивания
-            sessionStorage.setItem(`report_${reportType}_blob`, URL.createObjectURL(blob));
-        } else {
-            preview.innerHTML = `
-                <div class="report-preview-error">
-                    <p>Ошибка при генерации отчета (код ${xhr.status})</p>
-                    <button onclick="generateReport(${reportType})">Повторить</button>
-                </div>
-            `;
+    fetch(`/reports/generate_report_${reportType}`, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-Token': csrfToken
+        },
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
         }
-    };
+        return response.blob();
+    })
+    .then(blob => {
+        // Обновляем предпросмотр
+        preview.innerHTML = `
+            <div class="report-preview-success">
+                <p>Отчет успешно сгенерирован!</p>
+                <button onclick="downloadReport(${reportType})">Скачать отчет</button>
+            </div>
+        `;
 
-    xhr.onerror = function() {
+        // Сохраняем blob для последующего скачивания
+        let blobUrl = URL.createObjectURL(blob);
+        sessionStorage.setItem(`report_${reportType}_blob`, blobUrl);
+    })
+    .catch(error => {
+        console.error('Ошибка генерации отчета:', error);
         preview.innerHTML = `
             <div class="report-preview-error">
-                <p>Ошибка связи с сервером</p>
+                <p>Ошибка при генерации отчета: ${error.message}</p>
                 <button onclick="generateReport(${reportType})">Повторить</button>
             </div>
         `;
-    };
-
-    xhr.send(formData);
+    });
 }
 
 function downloadReport(reportType) {
@@ -56,9 +51,11 @@ function downloadReport(reportType) {
     if (blobUrl) {
         let link = document.createElement('a');
         link.href = blobUrl;
-        link.download = `report_${reportType}_${new Date().toISOString().slice(0,10)}.docx`;
+        link.download = `report_${reportType}_${new Date().toISOString().slice(0, 10)}.docx`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        sessionStorage.removeItem(`report_${reportType}_blob`);
+        URL.revokeObjectURL(blobUrl);
     }
 }

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Система учета доноров крови - Выгрузка отчетов</title>
@@ -9,16 +10,62 @@
 </head>
 <body>
 <div class="header">
-    <div class="hospital-name">Больница имени Н.И. Пирогова</div>
-    <div class="name-container" onmouseenter="showLogoutButton()" onmouseleave="hideLogoutButton()">
-        <div class="name" onfocus="showLogoutButton()">
-            Петрова А.С. (Администратор)
-        </div>
-        <div class="exit-button" style="display: none" onmouseenter="showLogoutButton()"
-             onmouseleave="hideLogoutButton()" onclick="location.href='/login'">Выход
+    <div class="left-group">
+        <div class="hospital-name" id="hospital-name">Загрузка...</div>
+        <div class="navigation">
+            <button onclick="location.href='/donor/list'">✎ Доноры</button>
+            <button onclick="location.href='/reports'">📜 Отчеты</button>
+            <button onclick="location.href='/blood_bank'">🗑 Банк крови</button>
         </div>
     </div>
+
+    <div class="name-container" onmouseenter="showLogoutButton()" onmouseleave="hideLogoutButton()">
+        <div class="name" onfocus="showLogoutButton()" id="doctor-name">Загрузка...</div>
+        <div class="exit-button" style="display: none" onmouseenter="showLogoutButton()" onmouseleave="hideLogoutButton()" onclick="location.href='/login'">Выход</div>
+    </div>
 </div>
+
+<div id="loading" style="display: none; text-align: center; padding: 10px;">Загрузка...</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const loadingElement = document.getElementById('loading');
+
+        function showLoading() {
+            loadingElement.style.display = 'block';
+        }
+
+        function hideLoading() {
+            loadingElement.style.display = 'none';
+        }
+
+        fetch('/doctor/current')
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('doctor-name').textContent = 'Врач не найден';
+                    document.getElementById('hospital-name').textContent = 'Учреждение не найдено';
+                } else {
+                    document.getElementById('doctor-name').textContent = `${data.secondname} ${data.name.charAt(0)}.`;
+                    document.getElementById('hospital-name').textContent = data.institutionname;
+                    document.getElementById('hospital-name').dataset.institutionCode = data.institutioncode;
+                }
+                searchDonors();
+                hideLoading();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('doctor-name').textContent = 'Ошибка загрузки';
+                document.getElementById('hospital-name').textContent = 'Ошибка загрузки';
+                searchDonors();
+                hideLoading();
+            });
+    });
+</script>
+
 
 <div class="content-wrapper">
     <div class="reports-container">
@@ -110,5 +157,6 @@
 </div>
 
 <script src="{{ url_for('static', filename='js/reportScripts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/index_scripts.js') }}"></script>
 </body>
 </html>
