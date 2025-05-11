@@ -14,8 +14,8 @@
     <div class="left-group">
         <div class="hospital-name" id="hospital-name">Загрузка...</div>
         <div class="navigation">
-            <button onclick="location.href='/donor/list'">👩‍⚕️ Доктора</button>
-            <button onclick="location.href='/institution/list'">🏥 Учреждения</button>
+            <button onclick="location.href='/doctor/list'">👩‍⚕️ Доктора</button>
+            <button onclick="location.href='/medical_institution/list'">🏥 Учреждения</button>
         </div>
     </div>
     <div class="name-container" onmouseenter="showLogoutButton()" onmouseleave="hideLogoutButton()">
@@ -23,6 +23,47 @@
         <div class="exit-button" style="display: none" onclick="location.href='/login'">Выход</div>
     </div>
 </div>
+
+<div id="loading" style="display: none; text-align: center; padding: 10px;">Загрузка...</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const loadingElement = document.getElementById('loading');
+
+        function showLoading() {
+            loadingElement.style.display = 'block';
+        }
+
+        function hideLoading() {
+            loadingElement.style.display = 'none';
+        }
+
+        fetch('/doctor/current')
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('doctor-name').textContent = 'Врач не найден';
+                    document.getElementById('hospital-name').textContent = 'Учреждение не найдено';
+                } else {
+                    document.getElementById('doctor-name').textContent = `${data.secondname} ${data.name.charAt(0)}.`;
+                    document.getElementById('hospital-name').textContent = data.institutionname;
+                    document.getElementById('hospital-name').dataset.institutionCode = data.institutioncode;
+                }
+                loadDoctors();
+                hideLoading();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('doctor-name').textContent = 'Ошибка загрузки';
+                document.getElementById('hospital-name').textContent = 'Ошибка загрузки';
+                loadDoctors();
+                hideLoading();
+            });
+    });
+</script>
 
 <main class="content-wrapper">
 

@@ -20,10 +20,6 @@ def index():
 @role_required('admin')
 def get_all_doctors():
     try:
-        # Проверка прав администратора
-        if current_user.role != 'admin':
-            return jsonify({'error': 'Доступ запрещен'}), 403
-
         doctors = Doctor.query.all()
         doctors_list = []
 
@@ -52,9 +48,6 @@ def get_all_doctors():
 @role_required('admin')
 def search_doctors():
     try:
-        if current_user.role != 'admin':
-            return jsonify({'error': 'Доступ запрещен'}), 403
-
         data = request.get_json()
         cipher = MagmaCipher()
 
@@ -132,9 +125,6 @@ def get_doctor():
 @role_required('admin')
 def add_doctor():
     try:
-        if current_user.role != 'admin':
-            return jsonify({'error': 'Доступ запрещен'}), 403
-
         data = request.get_json()
         cipher = current_app.config.get('ENCRYPTION_CIPHER')
 
@@ -186,10 +176,6 @@ def add_doctor():
 @role_required('admin')
 def edit_doctor():
     try:
-        # Проверка прав администратора
-        if current_user.role != 'admin':
-            return jsonify({'error': 'Доступ запрещен'}), 403
-
         data = request.get_json()
 
         required_fields = ['institutioncode', 'servicenumber']
@@ -238,10 +224,6 @@ def edit_doctor():
 @role_required('admin')
 def dismiss_doctor():
     try:
-        # Проверка прав администратора
-        if current_user.role != 'admin':
-            return jsonify({'error': 'Доступ запрещен'}), 403
-
         data = request.get_json()
 
         required_fields = ['institutioncode', 'servicenumber', 'transfer_institutioncode', 'transfer_servicenumber']

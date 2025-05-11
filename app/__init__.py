@@ -75,7 +75,7 @@ def create_app(config_class=Config):
     from .routes.donor_list import donor_list
     from .routes.doctor_list import doctor_info
     from .routes.blood_bank import blood_bank
-    from .routes.medical_institution import hospital_info
+    from .routes.medical_institution import medical_institution
     from .routes.report_system import report_system
     from .routes.information_system import information_system
     from .routes.doctor import doctor
@@ -93,7 +93,7 @@ def create_app(config_class=Config):
     app.register_blueprint(donor_list)
     app.register_blueprint(doctor_info)
     app.register_blueprint(blood_bank)
-    app.register_blueprint(hospital_info)
+    app.register_blueprint(medical_institution)
     app.register_blueprint(report_system)
 
     db.init_app(app)
