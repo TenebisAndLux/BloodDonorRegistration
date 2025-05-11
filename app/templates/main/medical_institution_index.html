@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Система учета доноров крови - Медицинские учреждения</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main_styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/list_styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modal_styles.css') }}">
+</head>
+<body>
+<div class="header">
+    <div class="left-group">
+        <div class="hospital-name" id="hospital-name">Загрузка...</div>
+        <div class="navigation">
+            <button onclick="location.href='/donor/list'">👩‍⚕️ Доктора</button>
+            <button onclick="location.href='/institution/list'">🏥 Учреждения</button>
+        </div>
+    </div>
+    <div class="name-container" onmouseenter="showLogoutButton()" onmouseleave="hideLogoutButton()">
+        <div class="name" id="doctor-name">Загрузка...</div>
+        <div class="exit-button" style="display: none" onclick="location.href='/login'">Выход</div>
+    </div>
+</div>
+
+<main class="content-wrapper">
+
+    <div class="search-container">
+        <form id="search-form">
+            <table>
+                <tr>
+                    <th><label for="nameofinstitution">Название учреждения:</label></th>
+                    <td><input type="text" id="nameofinstitution" name="nameofinstitution"></td>
+                    <th><label for="typeofinstitution">Тип учреждения:</label></th>
+                    <td><input type="text" id="typeofinstitution" name="typeofinstitution"></td>
+                </tr>
+                <tr>
+                    <th><label for="address">Адрес:</label></th>
+                    <td><input type="text" id="address" name="address"></td>
+                    <th><label for="contactphonenumber">Телефон:</label></th>
+                    <td><input type="text" id="contactphonenumber" name="contactphonenumber"></td>
+                </tr>
+                <tr>
+                    <td colspan="4" style="text-align: right;">
+                        <button type="button" onclick="searchInstitutions()">Найти</button>
+                        <button type="reset">Очистить</button>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+
+    <div class="action-buttons">
+        <button onclick="openAddInstitutionModal()">Добавить учреждение</button>
+    </div>
+
+    <div id="addInstitutionModal" class="modal-add">
+        <div class="modal-add-content">
+            <span class="close" onclick="closeAddInstitutionModal()">×</span>
+            <form id="addInstitutionForm">
+                <table>
+                    <tr>
+                        <th><label for="addInstitutionName">Название:</label></th>
+                        <td><input type="text" id="addInstitutionName" name="nameofinstitution" required></td>
+                        <th><label for="addInstitutionType">Тип:</label></th>
+                        <td><input type="text" id="addInstitutionType" name="typeofinstitution" required></td>
+                    </tr>
+                    <tr>
+                        <th><label for="addInstitutionAddress">Адрес:</label></th>
+                        <td><input type="text" id="addInstitutionAddress" name="address" required></td>
+                        <th><label for="addInstitutionPhone">Телефон:</label></th>
+                        <td><input type="text" id="addInstitutionPhone" name="contactphonenumber" required></td>
+                    </tr>
+                    <tr>
+                        <th><label for="addInstitutionEmail">Email:</label></th>
+                        <td colspan="3"><input type="email" id="addInstitutionEmail" name="email" required></td>
+                    </tr>
+                </table>
+                <div class="modal-add-action-buttons">
+                    <button type="submit">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="editInstitutionModal" class="modal-edit">
+        <div class="modal-edit-content">
+            <span class="close" onclick="closeEditInstitutionModal()">×</span>
+            <form id="editInstitutionForm">
+                <input type="hidden" id="editInstitutionCode" name="institutioncode">
+                <table>
+                    <tr>
+                        <th><label for="editInstitutionName">Название:</label></th>
+                        <td><input type="text" id="editInstitutionName" name="nameofinstitution" required></td>
+                        <th><label for="editInstitutionType">Тип:</label></th>
+                        <td><input type="text" id="editInstitutionType" name="typeofinstitution" required></td>
+                    </tr>
+                    <tr>
+                        <th><label for="editInstitutionAddress">Адрес:</label></th>
+                        <td><input type="text" id="editInstitutionAddress" name="address" required></td>
+                        <th><label for="editInstitutionPhone">Телефон:</label></th>
+                        <td><input type="text" id="editInstitutionPhone" name="contactphonenumber" required></td>
+                    </tr>
+                    <tr>
+                        <th><label for="editInstitutionEmail">Email:</label></th>
+                        <td colspan="3"><input type="email" id="editInstitutionEmail" name="email" required></td>
+                    </tr>
+                </table>
+                <div class="modal-edit-action-buttons">
+                    <button type="submit">Сохранить изменения</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <table class="donors-list">
+        <thead>
+            <tr>
+                <th>Название</th>
+                <th>Тип</th>
+                <th>Адрес</th>
+                <th>Телефон</th>
+                <th>Email</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody id="institutions-list">
+            <!-- Список учреждений будет загружен динамически -->
+        </tbody>
+    </table>
+
+</main>
+
+<div class="footer">
+    <span>Разработка и поддержка - ООО "DONOR MIRROR"</span>
+</div>
+
+<script src="{{ url_for('static', filename='js/institutionList.js') }}"></script>
+<script src="{{ url_for('static', filename='js/institutionAddModal.js') }}"></script>
+<script src="{{ url_for('static', filename='js/institutionEditModal.js') }}"></script>
+<script src="{{ url_for('static', filename='js/index_scripts.js') }}"></script>
+
+</body>
+</html>

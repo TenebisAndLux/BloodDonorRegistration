@@ -112,47 +112,34 @@ function getDonors() {
         });
 }
 
-function getSelectedDonor() {
-    if (!selectedRow) return null;
-    const fio = selectedRow.cells[2].textContent.split(' ');
-    return {
-        institutionname: selectedRow.cells[0].textContent,
-        passportdata: selectedRow.cells[1].textContent,
-        surname: fio[0],
-        name: fio[1],
-        secondname: fio[2] || '',
-        gender: selectedRow.cells[3].textContent,
-        birthday: selectedRow.cells[4].textContent,
-        address: selectedRow.cells[5].textContent,
-        phonenumber: selectedRow.cells[6].textContent,
-        polis: selectedRow.cells[7].textContent,
-        bloodgroup: selectedRow.cells[8].textContent,
-        rhfactor: selectedRow.cells[9].textContent
-    };
-}
-
 document.addEventListener('DOMContentLoaded', () => {
     if (getShouldGetDonorsState()) getDonors();
 });
 
-function renderDonorRow(donor) {
-    return `
-        <tr>
-            <td>${donor.institutionName}</td>
-            <td>${donor.passportData}</td>
-            <td>${donor.secondName} ${donor.name} ${donor.surName || ''}</td>
-            <td>${donor.gender === 'M' ? 'М' : 'Ж'}</td>
-            <td>${donor.birthday}</td>
-            <td>${donor.address || ''}</td>
-            <td>${donor.phoneNumber || ''}</td>
-            <td>${donor.polis || ''}</td>
-            <td>${donor.bloodGroup}</td>
-            <td>${donor.rhFactor}</td>
-            <td class="actions">
-                <button onclick="editDonorModal('${donor.passportData}', ${donor.institutionCode})">✏️</button>
-                <button onclick="deleteDonor('${donor.passportData}', ${donor.institutionCode})">🗑️</button>
-                <button onclick="openHistoryModal('${donor.passportData}', ${donor.institutionCode})">📜 История</button>
-            </td>
-        </tr>
-    `;
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('search-form');
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        setFalseShouldGetDonorsState();
+        handleSearchForm();
+    });
+    searchDonors();
+});
+
+function handleSearchForm() {
+    const form = document.getElementById('search-form');
+    const formData = new FormData(form);
+    const params = {
+        surname: formData.get('surname'),
+        name: formData.get('name'),
+        secondname: formData.get('secondname'),
+        address: formData.get('address'),
+        phonenumber: formData.get('phonenumber'),
+        polis: formData.get('polis'),
+        birthday: formData.get('birthday'),
+        bloodgroup: formData.get('bloodgroup'),
+        rhfactor: formData.get('rhfactor')
+    };
+
+    searchDonors(params);
 }

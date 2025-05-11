@@ -69,6 +69,7 @@ def login():
         response_data = {
             'status': 'success',
             'user_id': doctor.get_id(),
+            'role': doctor.role,
             'csrf_token': generate_csrf()
         }
         print("[8] Response data:", response_data)

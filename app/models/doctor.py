@@ -132,4 +132,5 @@ class Doctor(db.Model, UserMixin):
             'jobtitle': self.jobtitle,
             'login': self.login,
             'email': self.email,
+            'role': self.role,
         }

@@ -46,8 +46,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 const data = await response.json();
 
                 if (response.ok) {
-                    csrfToken = data.csrf_token;  // Обновляем токен
-                    window.location.href = '/donor/list';
+                    csrfToken = data.csrf_token;
+
+                    switch (data.role) {
+                        case 'admin':
+                            window.location.href = '/doctor/list';
+                            break;
+                        case 'doctor':
+                            window.location.href = '/donor/list';
+                            break;
+                        default:
+                            window.location.href = '/donor/list';
+                    }
                 } else {
                     alert(data.error || 'Ошибка входа');
                 }

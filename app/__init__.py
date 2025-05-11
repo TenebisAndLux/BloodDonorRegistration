@@ -73,9 +73,9 @@ def create_app(config_class=Config):
     from .routes.forgot_login import forgot_login
     from .routes.donor import donor
     from .routes.donor_list import donor_list
-    from .routes.doctor_info import doctor_info
+    from .routes.doctor_list import doctor_info
     from .routes.blood_bank import blood_bank
-    from .routes.hospital_info import hospital_info
+    from .routes.medical_institution import hospital_info
     from .routes.report_system import report_system
     from .routes.information_system import information_system
     from .routes.doctor import doctor
