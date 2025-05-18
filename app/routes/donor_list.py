@@ -1,6 +1,7 @@
 from datetime import datetime
+from operator import or_
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, current_app
 from flask_login import login_required
 
 from .. import MagmaCipher
@@ -60,28 +61,34 @@ def search_donors():
     query = db.session.query(Donor, MedicalInstitution).outerjoin(
         MedicalInstitution, Donor.institutioncode == MedicalInstitution.institutioncode
     )
+    cipher = current_app.config.get('ENCRYPTION_CIPHER')
 
     if name:
-        query = query.filter(Donor.name.ilike(f'%{name}%'))
+        query = query.filter(Donor._name.ilike(f'%{name}%'))  # Используем _name вместо name
     if secondname:
-        query = query.filter(Donor.secondname.ilike(f'%{secondname}%'))
+        query = query.filter(Donor._secondname.ilike(f'%{secondname}%'))
     if surname:
-        query = query.filter(Donor.surname.ilike(f'%{surname}%'))
+        query = query.filter(Donor._surname.ilike(f'%{surname}%'))
     if address:
-        query = query.filter(Donor.address.ilike(f'%{address}%'))
+        query = query.filter(Donor._address.ilike(f'%{address}%'))
     if phonenumber:
-        query = query.filter(Donor.phonenumber.ilike(f'%{phonenumber}%'))
+        query = query.filter(Donor._phonenumber.ilike(f'%{phonenumber}%'))
     if polis:
-        query = query.filter(Donor.polis.ilike(f'%{polis}%'))
+        query = query.filter(Donor._polis.ilike(f'%{polis}%'))
     if birthday:
         birthday = datetime.strptime(birthday, '%Y-%m-%d').date()
         query = query.filter(Donor.birthday == birthday)
     if bloodgroup:
-        query = query.filter(Donor.bloodgroup.ilike(f'%{bloodgroup}%'))
+        query = query.filter(Donor._bloodgroup.ilike(f'%{bloodgroup}%'))
     if rhfactor:
-        query = query.filter(Donor.rhfactor.ilike(f'%{rhfactor}%'))
+        query = query.filter(Donor._rhfactor.ilike(f'%{rhfactor}%'))
     if gender:
-        query = query.filter(Donor.gender.ilike(f'%{gender}%'))
+        try:
+            encrypted_gender = cipher.encrypt(gender.encode('utf-8'), mode='ECB').hex()
+            query = query.filter(Donor._gender == encrypted_gender)
+        except Exception as e:
+            current_app.logger.error(f"[Encryption error] Gender search: {e}")
+            return jsonify({'message': 'Search error'}), 500
 
     results = query.all()
 

@@ -113,7 +113,7 @@ def search_id(passportdata, institutioncode):
         # Выбираем сырые данные
         donor_data = db.session.query(
             Donor,
-            MedicalInstitution._nameofinstitution.hex().label('inst_name_hex')
+            MedicalInstitution._nameofinstitution.label('inst_name')
         ).join(
             MedicalInstitution, Donor.institutioncode == MedicalInstitution.institutioncode
         ).filter(
@@ -122,7 +122,7 @@ def search_id(passportdata, institutioncode):
         ).first_or_404()
 
         donor = donor_data[0]
-        raw_name = donor_data.inst_name_hex  # Получаем hex-строку напрямую
+        raw_name = donor_data.inst_name
 
         # Расшифровка
         cipher = MagmaCipher()

@@ -138,7 +138,8 @@ function handleSearchForm() {
         polis: formData.get('polis'),
         birthday: formData.get('birthday'),
         bloodgroup: formData.get('bloodgroup'),
-        rhfactor: formData.get('rhfactor')
+        rhfactor: formData.get('rhfactor'),
+        gender: formData.get('gender')
     };
 
     searchDonors(params);
